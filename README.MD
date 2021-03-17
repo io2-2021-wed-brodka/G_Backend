@@ -9,7 +9,7 @@ TODO
 
 ## To run the project
 
-You have to have python3 and django installed, preferably in virtual environment.  
+You have to have python3 installed, preferably in virtual environment.  
 Then simply run these commands in project directory:
 
 ```
