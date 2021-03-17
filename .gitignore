@@ -1,0 +1,10 @@
+.idea/
+.vs/
+
+venv/
+
+*.pyc
+__pycache__
+
+# TODO: remove after we migrate to PostgreSQL
+db.sqlite3

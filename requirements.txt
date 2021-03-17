@@ -1,0 +1,8 @@
+# only keep track of top level dependencies
+
+# main deps
+Django==3.1.7
+djangorestframework==3.12.2
+
+# dev deps
+black==20.8b1
