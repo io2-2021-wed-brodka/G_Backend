@@ -16,11 +16,23 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Bike",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 (
                     "state",
                     models.CharField(
-                        choices=[("working", "Working"), ("in_service", "In service"), ("blocked", "Blocked")],
+                        choices=[
+                            ("working", "Working"),
+                            ("in_service", "In service"),
+                            ("blocked", "Blocked"),
+                        ],
                         default="working",
                         max_length=20,
                     ),
@@ -28,7 +40,10 @@ class Migration(migrations.Migration):
                 (
                     "station",
                     models.ForeignKey(
-                        blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="stations.station"
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="stations.station",
                     ),
                 ),
             ],
