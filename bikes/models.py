@@ -6,11 +6,7 @@ class BikeState:
     in_service = "in_service"
     blocked = "blocked"
 
-    CHOICES = (
-        (working, "Working"),
-        (in_service, "In service"),
-        (blocked, "Blocked"),
-    )
+    CHOICES = ((working, "Working"), (in_service, "In service"), (blocked, "Blocked"))
 
 
 class Bike(models.Model):
