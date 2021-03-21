@@ -12,7 +12,9 @@ class StationState:
 
 
 class Station(models.Model):
-    state = models.CharField(max_length=20, choices=StationState.CHOICES, default=StationState.working)
+    state = models.CharField(
+        max_length=20, choices=StationState.CHOICES, default=StationState.working
+    )
     location = models.CharField(max_length=255)
 
     def __str__(self):
