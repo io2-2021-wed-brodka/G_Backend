@@ -16,6 +16,9 @@ class Bike(models.Model):
     station = models.ForeignKey(
         "stations.Station", on_delete=models.SET_NULL, null=True, blank=True
     )
+    user = models.ForeignKey(
+        "users.User", on_delete=models.SET_NULL, null=True, blank=True
+    )
 
     def __str__(self):
         return f"Bike {self.id} ({self.state}), at station {self.station.location}"
