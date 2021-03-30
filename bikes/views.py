@@ -1,15 +1,14 @@
-from rest_framework.serializers import ModelSerializer
-from rest_framework.viewsets import ModelViewSet
+from rest_framework import viewsets
 
 from bikes.models import Bike
+from bikes.serializers import ReadBikeSerializer, CreateBikeSerializer
 
 
-class BikeSerializer(ModelSerializer):
-    class Meta:
-        fields = "__all__"
-        model = Bike
-
-
-class BikeViewSet(ModelViewSet):
+class BikeViewSet(viewsets.ModelViewSet):
     queryset = Bike.objects.all()
-    serializer_class = BikeSerializer
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return CreateBikeSerializer
+        else:
+            return ReadBikeSerializer
