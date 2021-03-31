@@ -9,9 +9,6 @@ from users.models import User
 
 
 class BikesCrudTestCase(TestCase):
-    def setUp(self):
-        pass
-
     def test_create_bike(self):
         station = Station.objects.create(name="Station Name")
         response = self.client.post(reverse("bike-list"), {"stationId": station.id})
