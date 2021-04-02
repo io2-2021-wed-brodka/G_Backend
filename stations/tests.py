@@ -3,7 +3,7 @@ from django.test import TestCase
 from rest_framework.reverse import reverse
 from rest_framework import status
 
-from stations.models import Station, StationState
+from stations.models import Station
 
 
 class StationCrudTestCase(TestCase):
@@ -22,7 +22,23 @@ class StationCrudTestCase(TestCase):
         self.assertEqual(response.data, {"id": station.id, "name": station.name})
 
     def test_get_stations(self):
-        pass
+        station1 = Station.objects.create(name="Good 'ol station 1")
+        station2 = Station.objects.create(name="Good 'ol station 2")
+        response = self.client.get(reverse("station-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data,
+            [
+                {
+                    "id": station1.id,
+                    "name": station1.name,
+                },
+                {
+                    "id": station2.id,
+                    "name": station2.name,
+                },
+            ],
+        )
 
     def test_delete_station(self):
         pass
