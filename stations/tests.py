@@ -6,7 +6,7 @@ from rest_framework import status
 from stations.models import Station
 
 
-class StationCrudTestCase(TestCase):
+class StationCreateTestCase(TestCase):
     def test_create_station(self):
         response = self.client.post(
             reverse("station-list"), {"name": "Good 'ol station"}
@@ -15,6 +15,8 @@ class StationCrudTestCase(TestCase):
         station = Station.objects.first()
         self.assertEqual(response.data, {"id": station.id, "name": station.name})
 
+
+class StationGetTestCase(TestCase):
     def test_get_station(self):
         station = Station.objects.create(name="Good 'ol station")
         response = self.client.get(reverse("station-detail", kwargs={"pk": station.id}))
@@ -40,6 +42,8 @@ class StationCrudTestCase(TestCase):
             ],
         )
 
+
+class StationDeleteTestCase(TestCase):
     def test_delete_station_successful_status_code(self):
         station = Station.objects.create(name="Good 'ol station")
         response = self.client.delete(
@@ -59,3 +63,8 @@ class StationCrudTestCase(TestCase):
                 "name": station.name,
             },
         )
+
+    def test_delete_station_successful_doesnt_exist(self):
+        station = Station.objects.create(name="Good 'ol station")
+        self.client.delete(reverse("station-detail", kwargs={"pk": station.id}))
+        self.assertFalse(Station.objects.filter(id=station.id).exists())
