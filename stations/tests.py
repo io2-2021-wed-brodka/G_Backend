@@ -7,27 +7,41 @@ from stations.models import Station
 
 
 class StationCreateTestCase(TestCase):
-    def test_create_station(self):
+    def test_create_station_status_code(self):
         response = self.client.post(
             reverse("station-list"), {"name": "Good 'ol station"}
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_station_body(self):
+        response = self.client.post(
+            reverse("station-list"), {"name": "Good 'ol station"}
+        )
         station = Station.objects.first()
         self.assertEqual(response.data, {"id": station.id, "name": station.name})
 
 
 class StationGetTestCase(TestCase):
-    def test_get_station(self):
+    def test_get_station_status_code(self):
         station = Station.objects.create(name="Good 'ol station")
         response = self.client.get(reverse("station-detail", kwargs={"pk": station.id}))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_station_body(self):
+        station = Station.objects.create(name="Good 'ol station")
+        response = self.client.get(reverse("station-detail", kwargs={"pk": station.id}))
         self.assertEqual(response.data, {"id": station.id, "name": station.name})
 
-    def test_get_stations(self):
+
+class StationsGetTestCase(TestCase):
+    def test_get_stations_status_code(self):
+        response = self.client.get(reverse("station-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_stations_body(self):
         station1 = Station.objects.create(name="Good 'ol station 1")
         station2 = Station.objects.create(name="Good 'ol station 2")
         response = self.client.get(reverse("station-list"))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.data,
             [

@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class BikeState:
+class BikeStatus:
     working = "working"
     in_service = "in_service"
     blocked = "blocked"
@@ -11,7 +11,7 @@ class BikeState:
 
 class Bike(models.Model):
     status = models.CharField(
-        max_length=20, choices=BikeState.CHOICES, default=BikeState.working
+        max_length=20, choices=BikeStatus.CHOICES, default=BikeStatus.working
     )
     station = models.ForeignKey(
         "stations.Station", on_delete=models.SET_NULL, null=True, blank=True
