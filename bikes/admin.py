@@ -1,3 +1,8 @@
 from django.contrib import admin
 
-# Register your models here.
+from bikes.models import Bike
+
+
+@admin.register(Bike)
+class BikeAdmin(admin.ModelAdmin):
+    pass
