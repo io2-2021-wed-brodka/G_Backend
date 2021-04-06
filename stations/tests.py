@@ -63,20 +63,14 @@ class StationDeleteTestCase(TestCase):
         response = self.client.delete(
             reverse("station-detail", kwargs={"pk": station.id})
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_delete_station_successful_body(self):
         station = Station.objects.create(name="Good 'ol station")
         response = self.client.delete(
             reverse("station-detail", kwargs={"pk": station.id})
         )
-        self.assertEqual(
-            response.data,
-            {
-                "id": str(station.id),
-                "name": station.name,
-            },
-        )
+        self.assertEqual(response.data, None)
 
     def test_delete_station_successful_doesnt_exist(self):
         station = Station.objects.create(name="Good 'ol station")
