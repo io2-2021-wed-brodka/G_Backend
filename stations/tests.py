@@ -18,7 +18,7 @@ class StationCreateTestCase(TestCase):
             reverse("station-list"), {"name": "Good 'ol station"}
         )
         station = Station.objects.first()
-        self.assertEqual(response.data, {"id": station.id, "name": station.name})
+        self.assertEqual(response.data, {"id": str(station.id), "name": station.name})
 
 
 class StationGetTestCase(TestCase):
@@ -30,7 +30,7 @@ class StationGetTestCase(TestCase):
     def test_get_station_body(self):
         station = Station.objects.create(name="Good 'ol station")
         response = self.client.get(reverse("station-detail", kwargs={"pk": station.id}))
-        self.assertEqual(response.data, {"id": station.id, "name": station.name})
+        self.assertEqual(response.data, {"id": str(station.id), "name": station.name})
 
 
 class StationsGetTestCase(TestCase):
@@ -46,11 +46,11 @@ class StationsGetTestCase(TestCase):
             response.data,
             [
                 {
-                    "id": station1.id,
+                    "id": str(station1.id),
                     "name": station1.name,
                 },
                 {
-                    "id": station2.id,
+                    "id": str(station2.id),
                     "name": station2.name,
                 },
             ],
@@ -73,7 +73,7 @@ class StationDeleteTestCase(TestCase):
         self.assertEqual(
             response.data,
             {
-                "id": station.id,
+                "id": str(station.id),
                 "name": station.name,
             },
         )
