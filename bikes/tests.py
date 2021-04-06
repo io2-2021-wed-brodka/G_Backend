@@ -23,15 +23,21 @@ class BikesGetTestCase(TestCase):
             response.data,
             [
                 {
-                    "id": bike1.id,
-                    "station": {"id": bike1.station.id, "name": bike1.station.name},
-                    "user": {"id": user.id, "name": user.name},
+                    "id": str(bike1.id),
+                    "station": {
+                        "id": str(bike1.station.id),
+                        "name": bike1.station.name,
+                    },
+                    "user": {"id": str(user.id), "name": user.name},
                     "status": bike1.status,
                 },
                 {
-                    "id": bike2.id,
-                    "station": {"id": bike2.station.id, "name": bike2.station.name},
-                    "user": {"id": user.id, "name": user.name},
+                    "id": str(bike2.id),
+                    "station": {
+                        "id": str(bike2.station.id),
+                        "name": bike2.station.name,
+                    },
+                    "user": {"id": str(user.id), "name": user.name},
                     "status": bike2.status,
                 },
             ],
@@ -51,9 +57,9 @@ class BikeCreateTestCase(TestCase):
         self.assertEqual(
             response.data,
             {
-                "id": bike.id,
+                "id": str(bike.id),
                 "station": {
-                    "id": station.id,
+                    "id": str(station.id),
                     "name": station.name,
                 },
                 "user": None,
