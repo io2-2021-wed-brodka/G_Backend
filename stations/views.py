@@ -1,4 +1,3 @@
-from rest_framework.status import HTTP_200_OK
 from rest_framework.viewsets import ModelViewSet
 
 from stations.models import Station
