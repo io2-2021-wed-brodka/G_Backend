@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from stations.models import Station, StationState
-from stations.serializers import StationSerializer, StationBlockedSerializer
+from stations.serializers import StationSerializer
 
 
 class StationViewSet(ModelViewSet):
