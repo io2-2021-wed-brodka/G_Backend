@@ -15,9 +15,7 @@ class StationViewSet(ModelViewSet):
     @action(detail=False, methods=["post"])
     def blocked(self, request):
         try:
-            station = Station.objects.get(
-                id=request.data.get("id")
-            )
+            station = Station.objects.get(id=request.data.get("id"))
         except Station.DoesNotExist:
             return Response(
                 {"message": "station not found"}, status=status.HTTP_404_NOT_FOUND

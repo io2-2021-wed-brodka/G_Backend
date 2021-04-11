@@ -7,9 +7,3 @@ class StationSerializer(ModelSerializer):
     class Meta:
         fields = ("id", "name")
         model = Station
-
-
-class StationBlockedSerializer(ModelSerializer):
-    class Meta:
-        fields = ("id",)
-        model = Station
