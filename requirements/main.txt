@@ -4,3 +4,4 @@
 Django~=3.2.0 # as django, main framework for backend server
 djangorestframework~=3.12.2 # as rest_framework, framework for django REST API
 django-cors-headers~=3.7.0 # as corsheaders, fix for CORS complains in browser
+python-decouple~=3.4 # for loading settigns from environment
