@@ -89,14 +89,14 @@ class StationBlockTestCase(TestCase):
         response = self.client.post(reverse("station-blocked"), {"id": f"{station.id}"})
         self.assertEqual(response.data, {"id": str(station.id), "name": station.name})
 
-    def test_delete_station_successful_not_found(self):
+    def test_delete_station_not_found(self):
         station = Station.objects.create(name="Good 'ol station")
         delete_id = station.id
         Station.objects.filter(id=station.id).delete()
         response = self.client.post(reverse("station-blocked"), {"id": f"{delete_id}"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_delete_station_successful_already_blocked(self):
+    def test_delete_station_already_blocked(self):
         station = Station.objects.create(
             name="Good 'ol station", state=StationState.blocked
         )
