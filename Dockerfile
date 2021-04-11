@@ -2,8 +2,8 @@ FROM python:3.9.4
 
 ENV PYTHONBUFFERED 1
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+COPY requirements/main.txt /requirements/main.txt
+RUN pip install -r /requirements/main.txt
 
 COPY . .
 

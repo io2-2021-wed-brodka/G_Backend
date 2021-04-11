@@ -1,9 +1,5 @@
 # Salty Bikes
 
-## Description
-
-
-
 ## Architecture
 
 Our backend stack is a simple Django + DRF.
@@ -12,16 +8,25 @@ For a database, we use SQLite for now, but will port to PostgreSQL in the future
 
 ## To run the project
 
-You have to have python3 installed, preferably in virtual environment.  
+If you are a contributor for now it's best to run the server locally.   
+You have to have `python3` installed.
 Then simply run these commands in project directory:
 
 ```
-pip install -r requirements.txt
+pip install -r requirements/dev.txt
 python manage.py migrate
 python manage.py runserver
 ```
 
 then go to http://127.0.0.1:8000/stations/ and http://127.0.0.1:8000/bikes/.
+
+Alternatively, you can run the server in a docker container.   
+Assuming you have docker installed (verify with `docker -v`)
+
+```
+docker build . -t salty-bikes
+docker run -t salty-bikes
+```
 
 ## How to contribute
 
