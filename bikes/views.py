@@ -1,7 +1,8 @@
 from rest_framework import viewsets, status
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 
-from bikes.models import Bike
+from bikes.models import Bike, BikeStatus
 from bikes.serializers import ReadBikeSerializer, CreateBikeSerializer
 
 
@@ -25,3 +26,8 @@ class BikeViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
             headers=headers,
         )
+
+
+class RentedBikesListAPIView(ListAPIView):
+    queryset = Bike.objects.filter(status=BikeStatus.in_service)
+    serializer_class = ReadBikeSerializer

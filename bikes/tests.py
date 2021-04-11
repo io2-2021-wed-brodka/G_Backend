@@ -83,3 +83,45 @@ class BikeDeleteTestCase(TestCase):
         bike = Bike.objects.create()
         self.client.delete(reverse("bike-detail", kwargs={"pk": bike.id}))
         self.assertFalse(Bike.objects.filter(id=bike.id).exists())
+
+
+class BikesGetRentedTestCase(TestCase):
+    def test_get_rented_bikes_status_code(self):
+        response = self.client.get(reverse("rented-bike-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_bikes_body(self):
+        user = User.objects.create(first_name="John", last_name="Doe")
+        station = Station.objects.create(name="Station Name")
+        Bike.objects.create(user=user, station=station, status=BikeStatus.working)
+        bike1 = Bike.objects.create(
+            user=user, station=station, status=BikeStatus.in_service
+        )
+        bike2 = Bike.objects.create(
+            user=user, station=station, status=BikeStatus.in_service
+        )
+        Bike.objects.create(user=user, station=station, status=BikeStatus.working)
+        response = self.client.get(reverse("rented-bike-list"))
+        self.assertEqual(
+            response.data,
+            [
+                {
+                    "id": str(bike1.id),
+                    "station": {
+                        "id": str(bike1.station.id),
+                        "name": bike1.station.name,
+                    },
+                    "user": {"id": str(user.id), "name": user.name},
+                    "status": bike1.status,
+                },
+                {
+                    "id": str(bike2.id),
+                    "station": {
+                        "id": str(bike2.station.id),
+                        "name": bike2.station.name,
+                    },
+                    "user": {"id": str(user.id), "name": user.name},
+                    "status": bike2.status,
+                },
+            ],
+        )
