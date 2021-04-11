@@ -7,5 +7,8 @@ router = DefaultRouter()
 router.register("bikes", views.BikeViewSet)
 
 urlpatterns = [
+    path(
+        "bikes/rented/", views.RentedBikesListAPIView.as_view(), name="rented-bike-list"
+    ),
     path("", include(router.urls)),
 ]
