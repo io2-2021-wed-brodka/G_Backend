@@ -8,7 +8,7 @@ from stations.serializers import StationSerializer
 
 
 class StationViewSet(ModelViewSet):
-    queryset = Station.objects.all()
+    queryset = Station.objects.filter(state=StationState.working)
     serializer_class = StationSerializer
 
     @action(detail=False, methods=["post"])

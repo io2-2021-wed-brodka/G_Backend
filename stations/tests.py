@@ -41,6 +41,8 @@ class StationsGetTestCase(TestCase):
     def test_get_stations_body(self):
         station1 = Station.objects.create(name="Good 'ol station 1")
         station2 = Station.objects.create(name="Good 'ol station 2")
+        # make sure blocked stations are not listed
+        Station.objects.create(name="Good 'ol station 1", state=StationState.blocked)
         response = self.client.get(reverse("station-list"))
         self.assertEqual(
             response.data,

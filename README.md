@@ -30,10 +30,10 @@ docker run -t salty-bikes
 
 ## How to contribute
 
-Given an issue, create a branch named `{feat,bug,chore}/some-meaningful-name` and a PR to `main` branch.   
-- `feat` for new functionality
-- `bug` for fixing existing code
-- `chore` for clean-ups, refactors, code quality changes
+Given an issue, create a branch named `{feat,bug,chore}/<jira-issue-id>-some-meaningful-name` (e.g. `feat/70-rented-bike-list`) and a PR to `main` branch.   
+- `feat` for new functionality (remember to add test for it)
+- `bug` for fixing existing code (remember to add test preventing the bug in the future)
+- `chore` for clean-ups, refactors, code quality changes and CI improvements
   
 When ready, add at least two reviewers and wait for CR.   
 If accepted, squash merge your changes into main and delete the feature branch.
