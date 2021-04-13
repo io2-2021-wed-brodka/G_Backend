@@ -13,10 +13,11 @@ class RegisterAPIView(APIView):
     @staticmethod
     def post(request):
         ser = RegisterSerializer(data=request.data)
-        if (
-            ser.is_valid()
-            and not User.objects.filter(username=ser.data["username"]).exists()
-        ):
+        if ser.is_valid():
+            if User.objects.filter(username=ser.data["username"]).exists():
+                return Response(
+                    status=status.HTTP_409_CONFLICT, data={"message": "username already taken"}
+                )
             user = User.objects.create_user(
                 username=ser.data["username"],
                 password=ser.data["password"],
@@ -25,7 +26,7 @@ class RegisterAPIView(APIView):
             token, _ = Token.objects.get_or_create(user=user)
             return Response(status=status.HTTP_200_OK, data={"token": token.key})
         return Response(
-            status=status.HTTP_409_CONFLICT, data={"message": "username already taken"}
+            status=status.HTTP_409_CONFLICT, data={"message": "invalid request"}
         )
 
 

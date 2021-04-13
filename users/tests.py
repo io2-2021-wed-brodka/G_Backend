@@ -49,6 +49,22 @@ class RegisterTestCase(TestCase):
         )
         self.assertDictEqual(request.data, {"message": "username already taken"})
 
+    def test_register_fail_no_username_status_code(self):
+        username = "john-doe"
+        User.objects.create_user(username=username, password="qwerty")
+        request = self.client.post(
+            reverse("register"), {"username": "", "password": "qwerty"}
+        )
+        self.assertEqual(request.status_code, status.HTTP_409_CONFLICT)
+
+    def test_register_fail_no_username_body(self):
+        username = "john-doe"
+        User.objects.create_user(username=username, password="qwerty")
+        request = self.client.post(
+            reverse("register"), {"username": "", "password": "qwerty"}
+        )
+        self.assertDictEqual(request.data, {"message": "invalid request"})
+
 
 class LoginTestCase(TestCase):
     def test_login_user_successful_status_code(self):
