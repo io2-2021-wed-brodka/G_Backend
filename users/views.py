@@ -16,7 +16,8 @@ class RegisterAPIView(APIView):
         if ser.is_valid():
             if User.objects.filter(username=ser.data["username"]).exists():
                 return Response(
-                    status=status.HTTP_409_CONFLICT, data={"message": "username already taken"}
+                    status=status.HTTP_409_CONFLICT,
+                    data={"message": "username already taken"},
                 )
             user = User.objects.create_user(
                 username=ser.data["username"],
