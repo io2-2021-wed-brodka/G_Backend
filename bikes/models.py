@@ -22,7 +22,11 @@ class Bike(models.Model):
         choices=BikeStatus.CHOICES, default=BikeStatus.available
     )
     station = models.ForeignKey(
-        "stations.Station", on_delete=models.PROTECT, null=True, blank=True, related_name="bikes"
+        "stations.Station",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="bikes",
     )
     user = models.ForeignKey(
         "users.User",
