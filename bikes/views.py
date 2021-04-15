@@ -29,5 +29,5 @@ class BikeViewSet(viewsets.ModelViewSet):
 
 
 class RentedBikesListAPIView(ListAPIView):
-    queryset = Bike.objects.filter(status=BikeStatus.in_service)
+    queryset = Bike.objects.filter(status=BikeStatus.rented)
     serializer_class = ReadBikeSerializer

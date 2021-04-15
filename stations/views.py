@@ -1,3 +1,4 @@
+from django.http import Http404
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -10,6 +11,21 @@ from stations.serializers import StationSerializer
 class StationViewSet(ModelViewSet):
     queryset = Station.objects.filter(state=StationState.working)
     serializer_class = StationSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            station = self.get_object()
+        except Http404:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND, data={"message": "station not found"}
+            )
+
+        if station.bikes.exists():
+            return Response(
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                data={"message": "station has bikes"},
+            )
+        return super().destroy(request, *args, **kwargs)
 
     @action(detail=False, methods=["post"])
     def blocked(self, request):
