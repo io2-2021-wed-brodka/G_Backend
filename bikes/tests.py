@@ -125,3 +125,14 @@ class BikesGetRentedTestCase(TestCase):
                 },
             ],
         )
+
+
+class BikesRentTestCase(TestCase):
+    def test_rent_bike_status_code(self):
+        user = User.objects.create(first_name="John", last_name="Doe")
+        station = Station.objects.create(name="Station Name")
+        rented_bike = Bike.objects.create(
+            user=user, station=station, status=BikeStatus.working
+        )
+        response = self.client.post(reverse("rented-bike-list"), {"id": f"{rented_bike.id}"})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
