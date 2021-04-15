@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status
-from rest_framework.generics import ListAPIView
+from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.response import Response
 
 from bikes.models import Bike, BikeStatus
@@ -7,7 +7,7 @@ from bikes.serializers import ReadBikeSerializer, CreateBikeSerializer
 from stations.models import Station, StationState
 
 
-class BikeViewSet(viewsets.ModelViewSet):
+class BikeViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
     queryset = Bike.objects.all()
 
     def get_serializer_class(self):
@@ -29,7 +29,7 @@ class BikeViewSet(viewsets.ModelViewSet):
         )
 
 
-class RentedBikesListAPIView(ListAPIView):
+class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
     queryset = Bike.objects.filter(status=BikeStatus.in_service)
     serializer_class = ReadBikeSerializer
 
@@ -45,16 +45,22 @@ class RentedBikesListAPIView(ListAPIView):
             )
         if rented_bike.user.username == "blocked":  # placeholder user is blocked
             return Response(
-                {"message": "Blocked users are not allowed to rent bikes"}, status=status.HTTP_403_FORBIDDEN
+                {"message": "Blocked users are not allowed to rent bikes"},
+                status=status.HTTP_403_FORBIDDEN,
             )
-        if Station.objects.exists(id=rented_bike.station.id, status=StationState.blocked):  # blocked station
+        if Station.objects.exists(
+            id=rented_bike.station.id, status=StationState.blocked
+        ):  # blocked station
             return Response(
-                {"message": "Station is blocked, it is not possible to rent bike from blocked station"}, status=status.HTTP_422_UNPROCESSABLE_ENTITY
+                {
+                    "message": "Station is blocked, it is not possible to rent bike from blocked station"
+                },
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
         if not rented_bike.status == BikeStatus.working:
             return Response(
                 {"message": "Bike is not available, it is rented, blocked or reserved"},
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
         rented_bike.status = BikeStatus.rented  # should be rented
         return Response(
@@ -62,7 +68,3 @@ class RentedBikesListAPIView(ListAPIView):
             status=status.HTTP_201_CREATED,
             headers=headers,
         )
-
-
-
-

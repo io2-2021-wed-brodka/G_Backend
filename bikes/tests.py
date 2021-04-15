@@ -134,5 +134,7 @@ class BikesRentTestCase(TestCase):
         rented_bike = Bike.objects.create(
             user=user, station=station, status=BikeStatus.working
         )
-        response = self.client.post(reverse("rented-bike-list"), {"id": f"{rented_bike.id}"})
+        response = self.client.post(
+            reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

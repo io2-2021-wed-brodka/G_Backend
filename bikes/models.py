@@ -9,7 +9,12 @@ class BikeStatus:
     blocked = "blocked"
     rented = "rented"
 
-    CHOICES = ((working, "Working"), (in_service, "In service"), (blocked, "Blocked"), (rented, "Rented"))
+    CHOICES = (
+        (working, "Working"),
+        (in_service, "In service"),
+        (blocked, "Blocked"),
+        (rented, "Rented"),
+    )
 
 
 class Bike(models.Model):

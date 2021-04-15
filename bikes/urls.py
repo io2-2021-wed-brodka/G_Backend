@@ -5,10 +5,8 @@ from bikes import views
 
 router = DefaultRouter()
 router.register("bikes", views.BikeViewSet)
+router.register("bikes/rented", views.RentedBikesViewSet, basename="bikes-rented")
 
 urlpatterns = [
-    path(
-        "bikes/rented/", views.RentedBikesListAPIView.as_view(), name="rented-bike-list"
-    ),
     path("", include(router.urls)),
 ]
