@@ -1,5 +1,5 @@
-from django.test import TestCase
 from django.utils import timezone
+from core.testcases import APITestCase
 
 from rest_framework.reverse import reverse
 from rest_framework import status
@@ -9,7 +9,7 @@ from stations.models import Station, StationState
 from users.models import User
 
 
-class BikesGetTestCase(TestCase):
+class BikesGetTestCase(APITestCase):
     def test_get_bikes_status_code(self):
         response = self.client.get(reverse("bike-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -45,7 +45,7 @@ class BikesGetTestCase(TestCase):
         )
 
 
-class BikeCreateTestCase(TestCase):
+class BikeCreateTestCase(APITestCase):
     def test_create_bike_status_code(self):
         station = Station.objects.create(name="Station Name")
         response = self.client.post(reverse("bike-list"), {"stationId": station.id})
@@ -69,7 +69,7 @@ class BikeCreateTestCase(TestCase):
         )
 
 
-class BikeDeleteTestCase(TestCase):
+class BikeDeleteTestCase(APITestCase):
     def test_delete_bike_successful_status_code(self):
         bike = Bike.objects.create()
         response = self.client.delete(reverse("bike-detail", kwargs={"pk": bike.id}))
@@ -86,7 +86,7 @@ class BikeDeleteTestCase(TestCase):
         self.assertFalse(Bike.objects.filter(id=bike.id).exists())
 
 
-class BikesGetRentedTestCase(TestCase):
+class BikesGetRentedTestCase(APITestCase):
     def test_get_rented_bikes_status_code(self):
         response = self.client.get(reverse("bikes-rented-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)

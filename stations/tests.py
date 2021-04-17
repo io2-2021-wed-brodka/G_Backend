@@ -1,4 +1,4 @@
-from django.test import TestCase
+from core.testcases import APITestCase
 
 from rest_framework.reverse import reverse
 from rest_framework import status
@@ -8,7 +8,7 @@ from stations.models import Station, StationState
 from users.models import User
 
 
-class StationCreateTestCase(TestCase):
+class StationCreateTestCase(APITestCase):
     def test_create_station_status_code(self):
         response = self.client.post(
             reverse("station-list"), {"name": "Good 'ol station"}
@@ -23,7 +23,7 @@ class StationCreateTestCase(TestCase):
         self.assertEqual(response.data, {"id": str(station.id), "name": station.name})
 
 
-class StationGetTestCase(TestCase):
+class StationGetTestCase(APITestCase):
     def test_get_station_status_code(self):
         station = Station.objects.create(name="Good 'ol station")
         response = self.client.get(reverse("station-detail", kwargs={"pk": station.id}))
@@ -35,7 +35,7 @@ class StationGetTestCase(TestCase):
         self.assertEqual(response.data, {"id": str(station.id), "name": station.name})
 
 
-class StationsGetTestCase(TestCase):
+class StationsGetTestCase(APITestCase):
     def test_get_stations_status_code(self):
         response = self.client.get(reverse("station-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -61,7 +61,7 @@ class StationsGetTestCase(TestCase):
         )
 
 
-class StationDeleteTestCase(TestCase):
+class StationDeleteTestCase(APITestCase):
     def test_delete_station_successful_status_code(self):
         station = Station.objects.create(name="Good 'ol station")
         response = self.client.delete(
@@ -106,7 +106,7 @@ class StationDeleteTestCase(TestCase):
         self.assertEqual(response.data, {"message": "station not found"})
 
 
-class StationBlockTestCase(TestCase):
+class StationBlockTestCase(APITestCase):
     def test_block_station_successful_status_code(self):
         station = Station.objects.create(name="Good 'ol station")
         response = self.client.post(reverse("station-blocked"), {"id": f"{station.id}"})
