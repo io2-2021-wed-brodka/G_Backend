@@ -52,11 +52,13 @@ class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewS
             return Response(
                 {"message": "bike not found"}, status=status.HTTP_404_NOT_FOUND
             )
-        if rented_bike.user.username == "blocked":  # placeholder user is blocked
-            return Response(
-                {"message": "Blocked users are not allowed to rent bikes"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        # TODO(kkrolik): uncomment once blocking users is introduced
+        # user = somehow_get_user_from_token_in_headers(request)
+        # if user.status == UserStatus.blocked:
+        #     return Response(
+        #         {"message": "Blocked users are not allowed to rent bikes"},
+        #         status=status.HTTP_403_FORBIDDEN,
+        #     )
         try:
             Station.objects.get(id=rented_bike.station.id, state=StationState.blocked)
         except Station.DoesNotExist:
@@ -68,6 +70,8 @@ class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewS
                     status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 )
             rented_bike.status = BikeStatus.rented
+            rented_bike.station = None
+            rented_bike.save()
             return Response(
                 data=ReadBikeSerializer(rented_bike).data,
                 status=status.HTTP_201_CREATED,

@@ -152,17 +152,13 @@ class BikesRentTestCase(TestCase):
             response.data,
             {
                 "id": str(rented_bike.id),
-                "station": {
-                    "id": str(rented_bike.station.id),
-                    "name": rented_bike.station.name,
-                },
+                "station": None,
                 "user": {"id": str(user.id), "name": user.name},
                 "status": BikeStatus.rented,
             },
         )
 
-    def test_rent_bike_user_blocked(self):
-        pass
+    # TODO(kkrolik): add test for blocked user after introducing user blocking
 
     def test_rent_bike_blocked(self):
         user = User.objects.create(first_name="John3", last_name="Doe")
@@ -209,3 +205,31 @@ class BikesRentTestCase(TestCase):
             reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
         )
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    def test_rent_bike_status_changes_to_rented(self):
+        user = User.objects.create(first_name="John6", last_name="Doe")
+        station = Station.objects.create(
+            name="Station Name already rented x", state=StationState.working
+        )
+        rented_bike = Bike.objects.create(
+            user=user, station=station, status=BikeStatus.available
+        )
+        response = self.client.post(
+            reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
+        )
+        new_bike = Bike.objects.get(id=rented_bike.id)
+        self.assertEqual(new_bike.status, BikeStatus.rented)
+
+    def test_rent_bike_station_changes_to_null(self):
+        user = User.objects.create(first_name="John8", last_name="Doe")
+        station = Station.objects.create(
+            name="Station Name already rented x", state=StationState.working
+        )
+        rented_bike = Bike.objects.create(
+            user=user, station=station, status=BikeStatus.available
+        )
+        response = self.client.post(
+            reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
+        )
+        new_bike = Bike.objects.get(id=rented_bike.id)
+        self.assertEqual(new_bike.station, None)
