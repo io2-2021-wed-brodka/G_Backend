@@ -87,7 +87,7 @@ class BikeDeleteTestCase(TestCase):
 
 class BikesGetRentedTestCase(TestCase):
     def test_get_rented_bikes_status_code(self):
-        response = self.client.get(reverse("rented-bike-list"))
+        response = self.client.get(reverse("bikes-rented-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_bikes_body(self):
@@ -101,7 +101,7 @@ class BikesGetRentedTestCase(TestCase):
             user=user, station=station, status=BikeStatus.rented
         )
         Bike.objects.create(user=user, station=station, status=BikeStatus.available)
-        response = self.client.get(reverse("rented-bike-list"))
+        response = self.client.get(reverse("bikes-rented-list"))
         self.assertEqual(
             response.data,
             [
