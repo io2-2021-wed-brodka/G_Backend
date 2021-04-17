@@ -214,9 +214,7 @@ class BikesRentTestCase(TestCase):
         rented_bike = Bike.objects.create(
             user=user, station=station, status=BikeStatus.available
         )
-        response = self.client.post(
-            reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
-        )
+        self.client.post(reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"})
         new_bike = Bike.objects.get(id=rented_bike.id)
         self.assertEqual(new_bike.status, BikeStatus.rented)
 
@@ -228,8 +226,6 @@ class BikesRentTestCase(TestCase):
         rented_bike = Bike.objects.create(
             user=user, station=station, status=BikeStatus.available
         )
-        response = self.client.post(
-            reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
-        )
+        self.client.post(reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"})
         new_bike = Bike.objects.get(id=rented_bike.id)
         self.assertEqual(new_bike.station, None)
