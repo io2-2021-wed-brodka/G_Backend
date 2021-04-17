@@ -132,7 +132,7 @@ class BikesRentTestCase(TestCase):
         user = User.objects.create(first_name="John", last_name="Doe")
         station = Station.objects.create(name="Station Name")
         rented_bike = Bike.objects.create(
-            user=user, station=station, status=BikeStatus.working
+            user=user, station=station, status=BikeStatus.available
         )
         response = self.client.post(
             reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
@@ -143,7 +143,7 @@ class BikesRentTestCase(TestCase):
         user = User.objects.create(first_name="John2", last_name="Doe")
         station = Station.objects.create(name="Station Name")
         rented_bike = Bike.objects.create(
-            user=user, station=station, status=BikeStatus.working
+            user=user, station=station, status=BikeStatus.available
         )
         response = self.client.post(
             reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
@@ -162,7 +162,7 @@ class BikesRentTestCase(TestCase):
         )
 
     def test_rent_bike_user_blocked(self):
-        self.assertEqual(1, 1)
+        pass
 
     def test_rent_bike_blocked(self):
         user = User.objects.create(first_name="John3", last_name="Doe")
@@ -203,7 +203,7 @@ class BikesRentTestCase(TestCase):
             name="Station Name already rented", state=StationState.blocked
         )
         rented_bike = Bike.objects.create(
-            user=user, station=station, status=BikeStatus.working
+            user=user, station=station, status=BikeStatus.available
         )
         response = self.client.post(
             reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}

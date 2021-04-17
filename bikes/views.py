@@ -34,7 +34,7 @@ class BikeViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
 
 
 class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
-    queryset = Bike.objects.filter(status=BikeStatus.in_service)
+    queryset = Bike.objects.filter(status=BikeStatus.available)
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -60,7 +60,7 @@ class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewS
         try:
             Station.objects.get(id=rented_bike.station.id, state=StationState.blocked)
         except Station.DoesNotExist:
-            if not rented_bike.status == BikeStatus.working:
+            if not rented_bike.status == BikeStatus.available:
                 return Response(
                     {
                         "message": "Bike is not available, it is rented, blocked or reserved"
