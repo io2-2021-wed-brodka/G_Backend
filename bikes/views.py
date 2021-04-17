@@ -1,6 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 
 from bikes.models import Bike, BikeStatus
 from bikes.serializers import (
@@ -11,8 +12,8 @@ from bikes.serializers import (
 from stations.models import Station, StationState
 
 
-class BikeViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
-    queryset = Bike.objects.all()
+class BikeViewSet(ModelViewSet):
+    queryset = Bike.objects.filter(status=BikeStatus.available)
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -34,7 +35,7 @@ class BikeViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
 
 
 class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
-    queryset = Bike.objects.filter(status=BikeStatus.available)
+    queryset = Bike.objects.filter(status=BikeStatus.rented)
 
     def get_serializer_class(self):
         if self.action == "create":
