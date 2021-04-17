@@ -13,7 +13,7 @@ from stations.models import Station, StationState
 
 
 class BikeViewSet(ModelViewSet):
-    queryset = Bike.objects.all()
+    queryset = Bike.objects.filter(status=BikeStatus.available)
 
     def get_serializer_class(self):
         if self.action == "create":
