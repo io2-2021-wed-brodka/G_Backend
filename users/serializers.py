@@ -18,7 +18,7 @@ class ReadUserSerializer(ModelSerializer):
 
 
 class RegisterSerializer(Serializer):
-    username = serializers.CharField(required=True)
+    login = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
 
     def update(self, instance, validated_data):
@@ -29,7 +29,7 @@ class RegisterSerializer(Serializer):
 
 
 class LoginSerializer(Serializer):
-    username = serializers.CharField(required=True)
+    login = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
     role = serializers.CharField(required=True)
 

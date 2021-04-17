@@ -4,31 +4,36 @@ from django.db import models
 
 
 class BikeStatus:
-    working = "working"
-    in_service = "in_service"
-    blocked = "blocked"
-    rented = "rented"
-    reserved = "reserved"
-
+    available = 0
+    rented = 1
+    reserved = 2
+    blocked = 3
     CHOICES = (
-        (working, "Working"),
-        (in_service, "In service"),
-        (blocked, "Blocked"),
+        (available, "Available"),
         (rented, "Rented"),
         (reserved, "Reserved"),
+        (blocked, "Blocked"),
     )
 
 
 class Bike(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    status = models.CharField(
-        max_length=20, choices=BikeStatus.CHOICES, default=BikeStatus.working
+    status = models.PositiveSmallIntegerField(
+        choices=BikeStatus.CHOICES, default=BikeStatus.available
     )
     station = models.ForeignKey(
-        "stations.Station", on_delete=models.SET_NULL, null=True, blank=True
+        "stations.Station",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="bikes",
     )
     user = models.ForeignKey(
-        "users.User", on_delete=models.SET_NULL, null=True, blank=True
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="bikes",
     )
 
     def __str__(self):

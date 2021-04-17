@@ -63,7 +63,7 @@ class BikeCreateTestCase(TestCase):
                     "name": station.name,
                 },
                 "user": None,
-                "status": BikeStatus.working,
+                "status": BikeStatus.available,
             },
         )
 
@@ -93,14 +93,14 @@ class BikesGetRentedTestCase(TestCase):
     def test_get_bikes_body(self):
         user = User.objects.create(first_name="John", last_name="Doe")
         station = Station.objects.create(name="Station Name")
-        Bike.objects.create(user=user, station=station, status=BikeStatus.working)
+        Bike.objects.create(user=user, station=station, status=BikeStatus.available)
         bike1 = Bike.objects.create(
-            user=user, station=station, status=BikeStatus.in_service
+            user=user, station=station, status=BikeStatus.rented
         )
         bike2 = Bike.objects.create(
-            user=user, station=station, status=BikeStatus.in_service
+            user=user, station=station, status=BikeStatus.rented
         )
-        Bike.objects.create(user=user, station=station, status=BikeStatus.working)
+        Bike.objects.create(user=user, station=station, status=BikeStatus.available)
         response = self.client.get(reverse("rented-bike-list"))
         self.assertEqual(
             response.data,

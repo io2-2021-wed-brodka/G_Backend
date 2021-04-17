@@ -1,7 +1,6 @@
+from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -14,13 +13,13 @@ class RegisterAPIView(APIView):
     def post(request):
         ser = RegisterSerializer(data=request.data)
         if ser.is_valid():
-            if User.objects.filter(username=ser.data["username"]).exists():
+            if User.objects.filter(username=ser.data["login"]).exists():
                 return Response(
                     status=status.HTTP_409_CONFLICT,
                     data={"message": "username already taken"},
                 )
             user = User.objects.create_user(
-                username=ser.data["username"],
+                username=ser.data["login"],
                 password=ser.data["password"],
                 role=UserRole.user,
             )
@@ -31,7 +30,7 @@ class RegisterAPIView(APIView):
         )
 
 
-class LoginAPIView(ObtainAuthToken):
+class LoginAPIView(APIView):
     def post(self, request, *args, **kwargs):
         # we wrap default DRF obtain_auth_token flow to be compliant with specification
         ser = LoginSerializer(data=request.data)
@@ -39,18 +38,22 @@ class LoginAPIView(ObtainAuthToken):
             ser.is_valid()
             # only authenticate if the role is matching
             and User.objects.filter(
-                username=ser.data["username"], role=ser.data["role"]
+                username=ser.data["login"], role=ser.data["role"]
             ).exists()
         ):
-            try:
-                # fall back to default DRF implementation
-                return super().post(request, *args, **kwargs)
-            except ValidationError:
-                # return specification compliant response
+            # fall back to default DRF implementation
+            user = authenticate(
+                request=request,
+                username=ser.data["login"],
+                password=ser.data["password"],
+            )
+            if not user:
                 return Response(
                     status=status.HTTP_401_UNAUTHORIZED,
                     data={"message": "bad credentials"},
                 )
+            token, _ = Token.objects.get_or_create(user=user)
+            return Response(status=status.HTTP_200_OK, data={"token": token.key})
         # return specification compliant response
         return Response(
             status=status.HTTP_401_UNAUTHORIZED, data={"message": "bad credentials"}

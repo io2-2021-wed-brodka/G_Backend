@@ -3,6 +3,7 @@ from django.test import TestCase
 from rest_framework.reverse import reverse
 from rest_framework import status
 
+from bikes.models import Bike
 from stations.models import Station, StationState
 
 
@@ -78,6 +79,30 @@ class StationDeleteTestCase(TestCase):
         station = Station.objects.create(name="Good 'ol station")
         self.client.delete(reverse("station-detail", kwargs={"pk": station.id}))
         self.assertFalse(Station.objects.filter(id=station.id).exists())
+
+    def test_delete_station_has_bikes_status_code(self):
+        station = Station.objects.create(name="Good 'ol station")
+        Bike.objects.create(station=station)
+        response = self.client.delete(
+            reverse("station-detail", kwargs={"pk": station.id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    def test_delete_station_has_bikes_body(self):
+        station = Station.objects.create(name="Good 'ol station")
+        Bike.objects.create(station=station)
+        response = self.client.delete(
+            reverse("station-detail", kwargs={"pk": station.id})
+        )
+        self.assertEqual(response.data, {"message": "station has bikes"})
+
+    def test_delete_station_not_found_status_code(self):
+        response = self.client.delete(reverse("station-detail", kwargs={"pk": "abc"}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_station_not_found_body(self):
+        response = self.client.delete(reverse("station-detail", kwargs={"pk": "abc"}))
+        self.assertEqual(response.data, {"message": "station not found"})
 
 
 class StationBlockTestCase(TestCase):
