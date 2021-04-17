@@ -4,7 +4,7 @@ from rest_framework.reverse import reverse
 from rest_framework import status
 
 from bikes.models import Bike, BikeStatus
-from stations.models import Station
+from stations.models import Station, StationState
 from users.models import User
 
 
@@ -138,3 +138,74 @@ class BikesRentTestCase(TestCase):
             reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_rent_bike_body(self):
+        user = User.objects.create(first_name="John2", last_name="Doe")
+        station = Station.objects.create(name="Station Name")
+        rented_bike = Bike.objects.create(
+            user=user, station=station, status=BikeStatus.working
+        )
+        response = self.client.post(
+            reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
+        )
+        self.assertEqual(
+            response.data,
+            {
+                "id": str(rented_bike.id),
+                "station": {
+                    "id": str(rented_bike.station.id),
+                    "name": rented_bike.station.name,
+                },
+                "user": {"id": str(user.id), "name": user.name},
+                "status": BikeStatus.rented,
+            },
+        )
+
+    def test_rent_bike_user_blocked(self):
+        self.assertEqual(1, 1)
+
+    def test_rent_bike_blocked(self):
+        user = User.objects.create(first_name="John3", last_name="Doe")
+        station = Station.objects.create(name="Station Name already blocked")
+        rented_bike = Bike.objects.create(
+            user=user, station=station, status=BikeStatus.blocked
+        )
+        response = self.client.post(
+            reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
+        )
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    def test_rent_bike_already_rented(self):
+        user = User.objects.create(first_name="John4", last_name="Doe")
+        station = Station.objects.create(name="Station Name already rented")
+        rented_bike = Bike.objects.create(
+            user=user, station=station, status=BikeStatus.rented
+        )
+        response = self.client.post(
+            reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
+        )
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    def test_rent_bike_already_reserved(self):
+        user = User.objects.create(first_name="John5", last_name="Doe")
+        station = Station.objects.create(name="Station Name already reserved")
+        rented_bike = Bike.objects.create(
+            user=user, station=station, status=BikeStatus.reserved
+        )
+        response = self.client.post(
+            reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
+        )
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    def test_rent_bike_station_blocked(self):
+        user = User.objects.create(first_name="John4", last_name="Doe")
+        station = Station.objects.create(
+            name="Station Name already rented", state=StationState.blocked
+        )
+        rented_bike = Bike.objects.create(
+            user=user, station=station, status=BikeStatus.working
+        )
+        response = self.client.post(
+            reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
+        )
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)

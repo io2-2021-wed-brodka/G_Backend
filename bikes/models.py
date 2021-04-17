@@ -8,12 +8,14 @@ class BikeStatus:
     in_service = "in_service"
     blocked = "blocked"
     rented = "rented"
+    reserved = "reserved"
 
     CHOICES = (
         (working, "Working"),
         (in_service, "In service"),
         (blocked, "Blocked"),
         (rented, "Rented"),
+        (reserved, "Reserved"),
     )
 
 
