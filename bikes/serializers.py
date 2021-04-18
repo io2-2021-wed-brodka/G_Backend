@@ -24,3 +24,9 @@ class CreateBikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bike
         fields = ("stationId",)
+
+
+class RentBikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bike
+        fields = ("station",)

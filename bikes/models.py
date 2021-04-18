@@ -8,6 +8,7 @@ class BikeStatus:
     rented = 1
     reserved = 2
     blocked = 3
+
     CHOICES = (
         (available, "Available"),
         (rented, "Rented"),
