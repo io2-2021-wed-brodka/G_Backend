@@ -102,8 +102,10 @@ class ReservationsViewSet(viewsets.ModelViewSet):
 
     def handle_exception(self, exc):
         if isinstance(exc, Http404):
-            return Response({"message": "Bike not reserved"},
-                            status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            return Response(
+                {"message": "Bike not reserved"},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
 
         return super().handle_exception(exc)
 
@@ -164,4 +166,3 @@ class ReservationsViewSet(viewsets.ModelViewSet):
             data=ReserveBikeSerializer(reserved_bike).data,
             status=status.HTTP_200_OK,
         )
-
