@@ -128,7 +128,7 @@ class BikesGetRentedTestCase(APITestCase):
         )
 
 
-class BikesRentTestCase(TestCase):
+class BikesRentTestCase(APITestCase):
     def test_rent_bike_status_code(self):
         user = User.objects.create(first_name="John", last_name="Doe")
         station = Station.objects.create(name="Station Name")
