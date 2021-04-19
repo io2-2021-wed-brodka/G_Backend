@@ -5,6 +5,7 @@ from bikes import views
 
 router = DefaultRouter()
 router.register("bikes/rented", views.RentedBikesViewSet, basename="bikes-rented")
+router.register("bikes/reserved", views.ReservationsViewSet, basename="bikes-reserved")
 router.register("bikes", views.BikeViewSet)
 
 urlpatterns = [

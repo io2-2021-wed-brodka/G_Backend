@@ -39,3 +39,14 @@ class Bike(models.Model):
 
     def __str__(self):
         return f"Bike {self.id} ({self.status}), at station {self.station.name}"
+
+
+class Reservation(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    reserved_at = models.DateTimeField()
+    reserved_till = models.DateTimeField()
+    bike = models.OneToOneField(
+        "bikes.Bike",
+        on_delete=models.CASCADE,
+        related_name="reservation",
+    )
