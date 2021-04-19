@@ -30,11 +30,9 @@ class BikeViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         bike = serializer.save()
-        headers = self.get_success_headers(serializer.data)
         return Response(
             data=ReadBikeSerializer(bike).data,
             status=status.HTTP_201_CREATED,
-            headers=headers,
         )
 
 
@@ -51,7 +49,6 @@ class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewS
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        headers = self.get_success_headers(serializer.data)
         try:
             rented_bike = Bike.objects.get(id=request.data.get("id"))
         except Bike.DoesNotExist:
@@ -59,8 +56,7 @@ class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewS
                 {"message": "bike not found"}, status=status.HTTP_404_NOT_FOUND
             )
         # TODO(kkrolik): uncomment once blocking users is introduced
-        # user = somehow_get_user_from_token_in_headers(request)
-        # if user.status == UserStatus.blocked:
+        # if request.user.status == UserStatus.blocked:
         #     return Response(
         #         {"message": "Blocked users are not allowed to rent bikes"},
         #         status=status.HTTP_403_FORBIDDEN,
@@ -81,7 +77,6 @@ class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewS
             return Response(
                 data=ReadBikeSerializer(rented_bike).data,
                 status=status.HTTP_201_CREATED,
-                headers=headers,
             )
         return Response(
             {"message": "Bike is not available, it is rented, blocked or reserved"},
