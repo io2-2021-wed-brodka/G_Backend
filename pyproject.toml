@@ -1,26 +1,6 @@
-[tool.flakehell]
+[tool.flake8]
+max-line-length = 88
 exclude = [
-    "README.md",
     "venv",
-    "migrations",
 ]
-format = "colored"
-show_source = true
-
-[tool.flakehell.plugins]
-flake8-bandit = ["+*"]
-flake8-bugbear = ["+*"]
-flake8-builtins = ["+*"]
-flake8-comprehensions = ["+*"]
-flake8-darglint = ["+*"]
-flake8-docstrings = ["+*"]
-flake8-eradicate = ["+*"]
-flake8-isort = ["+*"]
-flake8-mutable = ["+*"]
-flake8-pytest-style = ["+*"]
-flake8-spellcheck = ["+*"]
-mccabe = ["+*"]
-pep8-naming = ["+*"]
-pycodestyle = ["+*", "-E501", "-W503"]
-pyflakes = ["+*"]
-pylint = ["+*"]
+extend-ignore = "E501, W503"
