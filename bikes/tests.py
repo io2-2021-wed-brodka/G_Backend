@@ -250,9 +250,7 @@ class BikeReservationTestCase(TestCase):
         reserved_bike = Bike.objects.create(
             station=station, status=BikeStatus.available
         )
-        response = self.client.post(
-            reverse("bikes-reserved-list"), {"id": reserved_bike.id}
-        )
+        self.client.post(reverse("bikes-reserved-list"), {"id": reserved_bike.id})
         reserved_bike.refresh_from_db()
         self.assertEqual(reserved_bike.status, BikeStatus.reserved)
 
@@ -297,7 +295,7 @@ class BikeReservationDeleteTestCase(TestCase):
         )
         reserved_bike.reservation = reservation
         reserved_bike.save()
-        response = self.client.delete(
+        self.client.delete(
             reverse("bikes-reserved-detail", kwargs={"pk": str(reserved_bike.id)})
         )
         reserved_bike.refresh_from_db()

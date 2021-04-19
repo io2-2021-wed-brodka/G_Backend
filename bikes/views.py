@@ -112,7 +112,6 @@ class ReservationsViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        headers = self.get_success_headers(serializer.data)
         try:
             reserved_bike = Bike.objects.get(id=request.data.get("id"))
         except Bike.DoesNotExist:
@@ -137,7 +136,7 @@ class ReservationsViewSet(viewsets.ModelViewSet):
         #         status=status.HTTP_403_FORBIDDEN,
         #     )
         time = timezone.now()
-        reservation = Reservation.objects.create(
+        Reservation.objects.create(
             bike=reserved_bike,
             reserved_at=time,
             reserved_till=time + timezone.timedelta(minutes=30),
