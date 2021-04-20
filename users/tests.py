@@ -1,9 +1,8 @@
-from core.testcases import APITestCase
-from rest_framework.authtoken.models import Token
-
-from rest_framework.reverse import reverse
 from rest_framework import status
+from rest_framework.authtoken.models import Token
+from rest_framework.reverse import reverse
 
+from core.testcases import APITestCase
 from users.models import User, UserRole
 
 
@@ -78,10 +77,12 @@ class LoginTestCase(APITestCase):
     def test_login_user_successful_status_code(self):
         username = "john-doe"
         password = "qwerty"
-        User.objects.create_user(username=username, password=password, role="user")
+        User.objects.create_user(
+            username=username, password=password, role=UserRole.user
+        )
         response = self.client.post(
             reverse("login"),
-            {"login": username, "password": password, "role": "user"},
+            {"login": username, "password": password, "role": UserRole.user},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -89,11 +90,11 @@ class LoginTestCase(APITestCase):
         username = "john-doe"
         password = "qwerty"
         user = User.objects.create_user(
-            username=username, password=password, role="user"
+            username=username, password=password, role=UserRole.user
         )
         response = self.client.post(
             reverse("login"),
-            {"login": username, "password": password, "role": "user"},
+            {"login": username, "password": password, "role": UserRole.user},
         )
         token, _ = Token.objects.get_or_create(user=user)
         self.assertDictEqual(response.data, {"token": token.key})
@@ -101,20 +102,24 @@ class LoginTestCase(APITestCase):
     def test_login_fail_bad_credentials_status_code(self):
         username = "john-doe"
         password = "qwerty"
-        User.objects.create_user(username=username, password=password, role="user")
+        User.objects.create_user(
+            username=username, password=password, role=UserRole.user
+        )
         response = self.client.post(
             reverse("login"),
-            {"login": username, "password": "password", "role": "user"},
+            {"login": username, "password": "password", "role": UserRole.user},
         )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_login_fail_bad_credentials_body(self):
         username = "john-doe"
         password = "qwerty"
-        User.objects.create_user(username=username, password=password, role="user")
+        User.objects.create_user(
+            username=username, password=password, role=UserRole.user
+        )
         response = self.client.post(
             reverse("login"),
-            {"login": username, "password": "password", "role": "user"},
+            {"login": username, "password": "password", "role": UserRole.user},
         )
         self.assertDictEqual(response.data, {"message": "bad credentials"})
 
