@@ -19,7 +19,7 @@ class StationViewSet(
     mixins.DestroyModelMixin,
     GenericViewSet,
 ):
-    queryset = Station.objects.filter(state=StationState.working)
+    queryset = Station.objects.all()
     serializer_class = StationSerializer
 
     @restrict(UserRole.admin)

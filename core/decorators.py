@@ -26,7 +26,7 @@ def restrict(*roles: list):
             # restrict access based on user role and roles allowed for specific endpoint
             if request.user.role not in roles:
                 return Response(
-                    status=status.HTTP_401_UNAUTHORIZED,
+                    status=status.HTTP_403_FORBIDDEN,
                     data={"message": "Unauthorized"},
                 )
             return func(view, request, *args, **kwargs)
