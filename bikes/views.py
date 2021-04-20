@@ -1,8 +1,8 @@
 from django.http import Http404
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import GenericViewSet
 
 from bikes.models import Bike, BikeStatus
 
@@ -13,10 +13,17 @@ from bikes.serializers import (
     ReserveBikeSerializer,
     ReserveIdSerializer,
 )
+from core.decorators import restrict
 from stations.models import Station, StationState
+from users.models import UserRole
 
 
-class BikeViewSet(ModelViewSet):
+class BikeViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    GenericViewSet,
+):
     queryset = Bike.objects.filter(status=BikeStatus.available)
 
     def get_serializer_class(self):
@@ -25,6 +32,7 @@ class BikeViewSet(ModelViewSet):
         else:
             return ReadBikeSerializer
 
+    @restrict(UserRole.admin)
     def create(self, request, *args, **kwargs):
         # we override the whole CreateModelMixin.create, because we need to keep created object
         serializer = self.get_serializer(data=request.data)
@@ -34,6 +42,14 @@ class BikeViewSet(ModelViewSet):
             data=ReadBikeSerializer(bike).data,
             status=status.HTTP_201_CREATED,
         )
+
+    @restrict(UserRole.tech, UserRole.admin)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @restrict(UserRole.admin)
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
 
 
 class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
@@ -46,6 +62,7 @@ class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewS
         else:
             return ReadBikeSerializer
 
+    @restrict(UserRole.user, UserRole.tech, UserRole.admin)
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -82,6 +99,10 @@ class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewS
             {"message": "Bike is not available, it is rented, blocked or reserved"},
             status=status.HTTP_422_UNPROCESSABLE_ENTITY,
         )
+
+    @restrict(UserRole.user, UserRole.tech, UserRole.admin)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class ReservationsViewSet(viewsets.ModelViewSet):

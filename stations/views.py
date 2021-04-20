@@ -88,9 +88,9 @@ class StationViewSet(
                 },
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
-        # TODO(kkrolik): uncomment once capasity of station is introduced
-        # capasity = 10
-        # if Bike.objects.get(station=station.id).count() > capasity:
+        # TODO(kkrolik): uncomment once capacity of station is introduced
+        # capacity = 10
+        # if Bike.objects.get(station=station.id).count() > capacity:
         #    return Response(
         #        {"message": "Cannot associate specified bike with specified station, station is full"},
         #        status=status.HTTP_422_UNPROCESSABLE_ENTITY,
