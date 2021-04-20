@@ -254,6 +254,27 @@ class BikeReservationTestCase(TestCase):
         reserved_bike.refresh_from_db()
         self.assertEqual(reserved_bike.status, BikeStatus.reserved)
 
+    def test_create_reservation_body(self):
+        station = Station.objects.create(name="Station Name create reservation body")
+        reserved_bike = Bike.objects.create(
+            station=station, status=BikeStatus.available
+        )
+        response = self.client.post(
+            reverse("bikes-reserved-list"), {"id": reserved_bike.id}
+        )
+        self.assertEqual(
+            response.data,
+            {
+                "id": str(reserved_bike.id),
+                "station": {
+                    "id": str(reserved_bike.station.id),
+                    "name": reserved_bike.station.name,
+                },
+                "reservedAt": reserved_bike.reservation.reserved_at,
+                "reservedTill": reserved_bike.reservation.reserved_till,
+            },
+        )
+
     def test_reservation_already_exist(self):
         station = Station.objects.create(name="Station Name reservation already exists")
         reserved_bike = Bike.objects.create(station=station, status=BikeStatus.reserved)
@@ -300,6 +321,33 @@ class BikeReservationDeleteTestCase(TestCase):
         )
         reserved_bike.refresh_from_db()
         self.assertEqual(reserved_bike.status, BikeStatus.available)
+
+    def test_delete_reservation_body(self):
+        station = Station.objects.create(name="Station Name delete reservation body")
+        reserved_bike = Bike.objects.create(station=station, status=BikeStatus.reserved)
+        time = timezone.now()
+        reservation = Reservation.objects.create(
+            bike=reserved_bike,
+            reserved_at=time,
+            reserved_till=time + timezone.timedelta(minutes=30),
+        )
+        reserved_bike.reservation = reservation
+        reserved_bike.save()
+        response = self.client.delete(
+            reverse("bikes-reserved-detail", kwargs={"pk": str(reserved_bike.id)})
+        )
+        self.assertEqual(
+            response.data,
+            {
+                "id": str(reserved_bike.id),
+                "station": {
+                    "id": str(reserved_bike.station.id),
+                    "name": reserved_bike.station.name,
+                },
+                "reservedAt": reserved_bike.reservation.reserved_at,
+                "reservedTill": reserved_bike.reservation.reserved_till,
+            },
+        )
 
     def test_delete_reservation_bike_not_reserved(self):
         station = Station.objects.create(
