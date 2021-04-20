@@ -21,7 +21,7 @@ def restrict(*roles: list):
             # hint to developers if the setup is incorrect
             if not request.user:
                 raise BusinessLogicError(
-                    "restrict decorator can only be used on authenticating endpoints"
+                    "restrict decorator can only be used on endpoints where login is required"
                 )
             # restrict access based on user role and roles allowed for specific endpoint
             if request.user.role not in roles:

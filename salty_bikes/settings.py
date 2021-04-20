@@ -20,9 +20,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("SECRET_KEY", default="unsafe-development-secret-key")
+SECRET_KEY = config("SECRET_KEY")
 
-# FIXME(tkarwowski): Set to True by default for convenience, should be changed when .env file is introduced
 DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = ["127.0.0.1", "0.0.0.0"]
