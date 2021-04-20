@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from bikes.models import Bike, BikeStatus
+from bikes.models import Bike
 from bikes.serializers import ReadBikeSerializer
 from core.decorators import restrict
 from stations.models import Station, StationState
@@ -60,8 +60,7 @@ class StationViewSet(
                 {"message": "station not found"}, status=status.HTTP_404_NOT_FOUND
             )
         if station.state == StationState.working:
-            station.state = StationState.blocked
-            station.save()
+            station.block()
             return Response(
                 {"id": f"{station.id}", "name": f"{station.name}"},
                 status=status.HTTP_201_CREATED,
@@ -73,6 +72,7 @@ class StationViewSet(
             )
 
     @action(detail=True, methods=["post"])
+    @restrict(UserRole.admin, UserRole.tech, UserRole.user)
     def bikes(self, request, *args, **kwargs):  # return bikes
         try:
             bike = Bike.objects.get(id=request.data.get("id"))
@@ -92,18 +92,15 @@ class StationViewSet(
         # capacity = 10
         # if Bike.objects.get(station=station.id).count() > capacity:
         #    return Response(
-        #        {"message": "Cannot associate specified bike with specified station, station is full"},
         #        status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        #        data={"message": "Cannot associate specified bike with specified station, station is full"},
         #    )
         if bike.station is not None:
             return Response(
                 {"message": "Bike associated to another station"},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
-        bike.station = station
-        bike.status = BikeStatus.available
-        bike.user = None
-        bike.save()
+        bike.return_to_station(station)
 
         return Response(
             data=ReadBikeSerializer(bike).data,
