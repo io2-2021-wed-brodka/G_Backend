@@ -4,6 +4,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+from bikes.models import Bike, BikeStatus
+from bikes.serializers import ReadBikeSerializer
 from stations.models import Station, StationState
 from stations.serializers import StationSerializer
 
@@ -47,3 +49,41 @@ class StationViewSet(ModelViewSet):
                 {"message": "station already blocked"},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
+
+    @action(detail=True, methods=["post"])
+    def bikes(self, request, *args, **kwargs):  # return bikes
+        try:
+            bike = Bike.objects.get(id=request.data.get("id"))
+        except Bike.DoesNotExist:
+            return Response(
+                {"message": "Bike not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        station = Station.objects.get(id=kwargs["pk"])
+        if station.state == StationState.blocked:
+            return Response(
+                {
+                    "message": "Cannot associate specified bike with specified station, station is blocked"
+                },
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        # TODO(kkrolik): uncomment once capasity of station is introduced
+        # capasity = 10
+        # if Bike.objects.get(station=station.id).count() > capasity:
+        #    return Response(
+        #        {"message": "Cannot associate specified bike with specified station, station is full"},
+        #        status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        #    )
+        if bike.station is not None:
+            return Response(
+                {"message": "Bike associated to another station"},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        bike.station = station
+        bike.status = BikeStatus.available
+        bike.user = None
+        bike.save()
+
+        return Response(
+            data=ReadBikeSerializer(bike).data,
+            status=status.HTTP_201_CREATED,
+        )

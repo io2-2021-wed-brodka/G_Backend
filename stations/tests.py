@@ -3,8 +3,9 @@ from django.test import TestCase
 from rest_framework.reverse import reverse
 from rest_framework import status
 
-from bikes.models import Bike
+from bikes.models import Bike, BikeStatus
 from stations.models import Station, StationState
+from users.models import User
 
 
 class StationCreateTestCase(TestCase):
@@ -128,4 +129,88 @@ class StationBlockTestCase(TestCase):
             name="Good 'ol station", state=StationState.blocked
         )
         response = self.client.post(reverse("station-blocked"), {"id": f"{station.id}"})
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+
+class StationReturnBikeTestCase(TestCase):
+    def test_return_bike_successful_status_code(self):
+        user = User.objects.create(first_name="John6", last_name="Doe")
+        station = Station.objects.create(
+            name="Station Name", state=StationState.working
+        )
+        returned_bike = Bike.objects.create(
+            user=user, station=None, status=BikeStatus.rented
+        )
+        response = self.client.post(
+            reverse("station-bikes", kwargs={"pk": station.id}),
+            {"id": f"{returned_bike.id}"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_return_bike_successful_body(self):
+        user = User.objects.create(first_name="John6", last_name="Doe")
+        station = Station.objects.create(
+            name="Station Name", state=StationState.working
+        )
+        returned_bike = Bike.objects.create(
+            user=user, station=None, status=BikeStatus.rented
+        )
+        response = self.client.post(
+            reverse("station-bikes", kwargs={"pk": station.id}),
+            {"id": f"{returned_bike.id}"},
+        )
+        self.assertEqual(
+            response.data,
+            {
+                "id": str(returned_bike.id),
+                "station": {
+                    "id": str(station.id),
+                    "name": station.name,
+                },
+                "user": None,
+                "status": BikeStatus.available,
+            },
+        )
+
+    def test_return_bike_not_found(self):
+        user = User.objects.create(first_name="John6", last_name="Doe")
+        station = Station.objects.create(
+            name="Station Name", state=StationState.working
+        )
+        returned_bike = Bike.objects.create(
+            user=user, station=None, status=BikeStatus.rented
+        )
+        delete_id = returned_bike.id
+        Bike.objects.filter(id=returned_bike.id).delete()
+        response = self.client.post(
+            reverse("station-bikes", kwargs={"pk": station.id}), {"id": f"{delete_id}"}
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_return_bike_station_not_none(self):
+        user = User.objects.create(first_name="John6", last_name="Doe")
+        station = Station.objects.create(
+            name="Station Name", state=StationState.working
+        )
+        returned_bike = Bike.objects.create(
+            user=user, station=station, status=BikeStatus.rented
+        )
+        response = self.client.post(
+            reverse("station-bikes", kwargs={"pk": station.id}),
+            {"id": f"{returned_bike.id}"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    def test_return_bike_station_blocked(self):
+        user = User.objects.create(first_name="John6", last_name="Doe")
+        station = Station.objects.create(
+            name="Station Name", state=StationState.blocked
+        )
+        returned_bike = Bike.objects.create(
+            user=user, station=None, status=BikeStatus.rented
+        )
+        response = self.client.post(
+            reverse("station-bikes", kwargs={"pk": station.id}),
+            {"id": f"{returned_bike.id}"},
+        )
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
