@@ -4,24 +4,17 @@ from django.db import models
 from django.utils import timezone
 
 
-class BikeStatus:
-    available = 0
-    rented = 1
-    reserved = 2
-    blocked = 3
-
-    CHOICES = (
-        (available, "Available"),
-        (rented, "Rented"),
-        (reserved, "Reserved"),
-        (blocked, "Blocked"),
-    )
+class BikeStatus(models.TextChoices):
+    available = "available"
+    rented = "rented"
+    reserved = "reserved"
+    blocked = "blocked"
 
 
 class Bike(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    status = models.PositiveSmallIntegerField(
-        choices=BikeStatus.CHOICES, default=BikeStatus.available
+    status = models.CharField(
+        max_length=9, choices=BikeStatus.choices, default=BikeStatus.available
     )
     station = models.ForeignKey(
         "stations.Station",
