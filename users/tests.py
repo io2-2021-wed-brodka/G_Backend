@@ -1,13 +1,17 @@
-from django.test import TestCase
-from rest_framework.authtoken.models import Token
-
-from rest_framework.reverse import reverse
 from rest_framework import status
+from rest_framework.authtoken.models import Token
+from rest_framework.reverse import reverse
 
+from core.testcases import APITestCase
 from users.models import User, UserRole
 
 
-class RegisterTestCase(TestCase):
+class RegisterTestCase(APITestCase):
+    def setUp(self):
+        super().setUp()
+        # drop authentication done in APITestCase.setUp
+        self.client.force_authenticate(user=None)
+
     def test_register_successful_status_code(self):
         response = self.client.post(
             reverse("register"), {"login": "john-doe", "password": "qwerty"}
@@ -64,14 +68,21 @@ class RegisterTestCase(TestCase):
         self.assertDictEqual(request.data, {"message": "invalid request"})
 
 
-class LoginTestCase(TestCase):
+class LoginTestCase(APITestCase):
+    def setUp(self):
+        super().setUp()
+        # drop authentication done in APITestCase.setUp
+        self.client.force_authenticate(user=None)
+
     def test_login_user_successful_status_code(self):
         username = "john-doe"
         password = "qwerty"
-        User.objects.create_user(username=username, password=password, role="user")
+        User.objects.create_user(
+            username=username, password=password, role=UserRole.user
+        )
         response = self.client.post(
             reverse("login"),
-            {"login": username, "password": password, "role": "user"},
+            {"login": username, "password": password, "role": UserRole.user},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -79,11 +90,11 @@ class LoginTestCase(TestCase):
         username = "john-doe"
         password = "qwerty"
         user = User.objects.create_user(
-            username=username, password=password, role="user"
+            username=username, password=password, role=UserRole.user
         )
         response = self.client.post(
             reverse("login"),
-            {"login": username, "password": password, "role": "user"},
+            {"login": username, "password": password, "role": UserRole.user},
         )
         token, _ = Token.objects.get_or_create(user=user)
         self.assertDictEqual(response.data, {"token": token.key})
@@ -91,19 +102,55 @@ class LoginTestCase(TestCase):
     def test_login_fail_bad_credentials_status_code(self):
         username = "john-doe"
         password = "qwerty"
-        User.objects.create_user(username=username, password=password, role="user")
+        User.objects.create_user(
+            username=username, password=password, role=UserRole.user
+        )
         response = self.client.post(
             reverse("login"),
-            {"login": username, "password": "password", "role": "user"},
+            {"login": username, "password": "password", "role": UserRole.user},
         )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_login_fail_bad_credentials_body(self):
         username = "john-doe"
         password = "qwerty"
-        User.objects.create_user(username=username, password=password, role="user")
+        User.objects.create_user(
+            username=username, password=password, role=UserRole.user
+        )
         response = self.client.post(
             reverse("login"),
-            {"login": username, "password": "password", "role": "user"},
+            {"login": username, "password": "password", "role": UserRole.user},
         )
         self.assertDictEqual(response.data, {"message": "bad credentials"})
+
+
+class LogoutTestCase(APITestCase):
+    def test_logout_user_successful_status_code(self):
+        response = self.client.post(
+            reverse("logout"),
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_logout_successful_body(self):
+        response = self.client.post(
+            reverse("logout"),
+        )
+        self.assertEqual(response.data, {"message": "Successfully logged out."})
+
+    def test_logout_unauthorized_status_code(self):
+        # drop authentication done in APITestCase.setUp
+        self.client.force_authenticate(user=None)
+        response = self.client.post(
+            reverse("logout"),
+        )
+        # TODO(tkarwowski): revisit after logout is officially in specification
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    # TODO(tkarwowski): revisit after logout is officially in specification
+    # def test_logout_unauthorized_body(self):
+    #     # drop authentication done in APITestCase.setUp
+    #     self.client.force_authenticate(user=None)
+    #     response = self.client.post(
+    #         reverse("logout"),
+    #     )
+    #     self.assertEqual(response.data, {"message": "Invalid token."})

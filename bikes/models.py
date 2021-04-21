@@ -41,6 +41,12 @@ class Bike(models.Model):
     def __str__(self):
         return f"Bike {self.id} ({self.status}), at station {self.station.name}"
 
+    def return_to_station(self, station):
+        self.station = station
+        self.status = BikeStatus.available
+        self.user = None
+        self.save()
+
     def reserve(self):
         time = timezone.now()
         Reservation.objects.create(

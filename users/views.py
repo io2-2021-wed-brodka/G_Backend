@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.authtoken.models import Token
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -9,6 +10,9 @@ from users.serializers import RegisterSerializer, LoginSerializer
 
 
 class RegisterAPIView(APIView):
+    # no permissions needed to register
+    permission_classes = (AllowAny,)
+
     @staticmethod
     def post(request):
         ser = RegisterSerializer(data=request.data)
@@ -31,6 +35,9 @@ class RegisterAPIView(APIView):
 
 
 class LoginAPIView(APIView):
+    # no permissions needed to log in
+    permission_classes = (AllowAny,)
+
     def post(self, request, *args, **kwargs):
         # we wrap default DRF obtain_auth_token flow to be compliant with specification
         ser = LoginSerializer(data=request.data)
@@ -57,4 +64,13 @@ class LoginAPIView(APIView):
         # return specification compliant response
         return Response(
             status=status.HTTP_401_UNAUTHORIZED, data={"message": "bad credentials"}
+        )
+
+
+class LogoutAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        Token.objects.get(user=request.user).delete()
+        return Response(
+            status=status.HTTP_204_NO_CONTENT,
+            data={"message": "Successfully logged out."},
         )

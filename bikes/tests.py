@@ -1,5 +1,5 @@
-from django.test import TestCase
 from django.utils import timezone
+from core.testcases import APITestCase
 
 from rest_framework.reverse import reverse
 from rest_framework import status
@@ -9,7 +9,7 @@ from stations.models import Station, StationState
 from users.models import User
 
 
-class BikesGetTestCase(TestCase):
+class BikesGetTestCase(APITestCase):
     def test_get_bikes_status_code(self):
         response = self.client.get(reverse("bike-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -28,6 +28,7 @@ class BikesGetTestCase(TestCase):
                     "station": {
                         "id": str(bike1.station.id),
                         "name": bike1.station.name,
+                        "activeBikesCount": bike1.station.bikes.count(),
                     },
                     "user": {"id": str(user.id), "name": user.name},
                     "status": bike1.status,
@@ -37,6 +38,7 @@ class BikesGetTestCase(TestCase):
                     "station": {
                         "id": str(bike2.station.id),
                         "name": bike2.station.name,
+                        "activeBikesCount": bike2.station.bikes.count(),
                     },
                     "user": {"id": str(user.id), "name": user.name},
                     "status": bike2.status,
@@ -45,7 +47,7 @@ class BikesGetTestCase(TestCase):
         )
 
 
-class BikeCreateTestCase(TestCase):
+class BikeCreateTestCase(APITestCase):
     def test_create_bike_status_code(self):
         station = Station.objects.create(name="Station Name")
         response = self.client.post(reverse("bike-list"), {"stationId": station.id})
@@ -62,6 +64,7 @@ class BikeCreateTestCase(TestCase):
                 "station": {
                     "id": str(station.id),
                     "name": station.name,
+                    "activeBikesCount": station.bikes.count(),
                 },
                 "user": None,
                 "status": BikeStatus.available,
@@ -69,7 +72,7 @@ class BikeCreateTestCase(TestCase):
         )
 
 
-class BikeDeleteTestCase(TestCase):
+class BikeDeleteTestCase(APITestCase):
     def test_delete_bike_successful_status_code(self):
         bike = Bike.objects.create()
         response = self.client.delete(reverse("bike-detail", kwargs={"pk": bike.id}))
@@ -86,7 +89,7 @@ class BikeDeleteTestCase(TestCase):
         self.assertFalse(Bike.objects.filter(id=bike.id).exists())
 
 
-class BikesGetRentedTestCase(TestCase):
+class BikesGetRentedTestCase(APITestCase):
     def test_get_rented_bikes_status_code(self):
         response = self.client.get(reverse("bikes-rented-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -111,6 +114,7 @@ class BikesGetRentedTestCase(TestCase):
                     "station": {
                         "id": str(bike1.station.id),
                         "name": bike1.station.name,
+                        "activeBikesCount": bike1.station.bikes.count(),
                     },
                     "user": {"id": str(user.id), "name": user.name},
                     "status": bike1.status,
@@ -120,6 +124,7 @@ class BikesGetRentedTestCase(TestCase):
                     "station": {
                         "id": str(bike2.station.id),
                         "name": bike2.station.name,
+                        "activeBikesCount": bike2.station.bikes.count(),
                     },
                     "user": {"id": str(user.id), "name": user.name},
                     "status": bike2.status,
@@ -128,7 +133,7 @@ class BikesGetRentedTestCase(TestCase):
         )
 
 
-class BikesRentTestCase(TestCase):
+class BikesRentTestCase(APITestCase):
     def test_rent_bike_status_code(self):
         user = User.objects.create(first_name="John", last_name="Doe")
         station = Station.objects.create(name="Station Name")
@@ -232,7 +237,7 @@ class BikesRentTestCase(TestCase):
         self.assertEqual(new_bike.station, None)
 
 
-class BikeReservationTestCase(TestCase):
+class BikeReservationTestCase(APITestCase):
     def test_create_reservation(self):
         station = Station.objects.create(name="Station Name create reservation")
         reserved_bike = Bike.objects.create(
@@ -269,6 +274,7 @@ class BikeReservationTestCase(TestCase):
                 "station": {
                     "id": str(reserved_bike.station.id),
                     "name": reserved_bike.station.name,
+                    "activeBikesCount": reserved_bike.station.bikes.count(),
                 },
                 "reservedAt": reserved_bike.reservation.reserved_at,
                 "reservedTill": reserved_bike.reservation.reserved_till,
@@ -286,7 +292,7 @@ class BikeReservationTestCase(TestCase):
     # TODO(kboryczka): add test for blocked user after introducing user blocking
 
 
-class BikeReservationDeleteTestCase(TestCase):
+class BikeReservationDeleteTestCase(APITestCase):
     def test_delete_reservation_status_code(self):
         station = Station.objects.create(name="Station Name delete reservation")
         reserved_bike = Bike.objects.create(station=station, status=BikeStatus.reserved)

@@ -10,8 +10,14 @@ For a database, we use SQLite for now, but will port to PostgreSQL in the future
 
 If you are a contributor for now it's best to run the server locally.   
 You have to have `python3` installed.
-Then simply run these commands in project directory:
 
+You must create a file called `.env` in top level directory with following contents:
+```
+SECRET_KEY = <any-gibberish-you-want>
+DEBUG=True # can set to False if used by other team
+```
+
+Then simply run these commands in project directory:
 ```
 pip install -r requirements/dev.txt
 python manage.py migrate

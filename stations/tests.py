@@ -1,14 +1,13 @@
-from django.test import TestCase
-
-from rest_framework.reverse import reverse
 from rest_framework import status
+from rest_framework.reverse import reverse
 
 from bikes.models import Bike, BikeStatus
+from core.testcases import APITestCase
 from stations.models import Station, StationState
 from users.models import User
 
 
-class StationCreateTestCase(TestCase):
+class StationCreateTestCase(APITestCase):
     def test_create_station_status_code(self):
         response = self.client.post(
             reverse("station-list"), {"name": "Good 'ol station"}
@@ -20,10 +19,17 @@ class StationCreateTestCase(TestCase):
             reverse("station-list"), {"name": "Good 'ol station"}
         )
         station = Station.objects.first()
-        self.assertEqual(response.data, {"id": str(station.id), "name": station.name})
+        self.assertEqual(
+            response.data,
+            {
+                "id": str(station.id),
+                "name": station.name,
+                "activeBikesCount": station.bikes.count(),
+            },
+        )
 
 
-class StationGetTestCase(TestCase):
+class StationGetTestCase(APITestCase):
     def test_get_station_status_code(self):
         station = Station.objects.create(name="Good 'ol station")
         response = self.client.get(reverse("station-detail", kwargs={"pk": station.id}))
@@ -32,10 +38,17 @@ class StationGetTestCase(TestCase):
     def test_get_station_body(self):
         station = Station.objects.create(name="Good 'ol station")
         response = self.client.get(reverse("station-detail", kwargs={"pk": station.id}))
-        self.assertEqual(response.data, {"id": str(station.id), "name": station.name})
+        self.assertEqual(
+            response.data,
+            {
+                "id": str(station.id),
+                "name": station.name,
+                "activeBikesCount": station.bikes.count(),
+            },
+        )
 
 
-class StationsGetTestCase(TestCase):
+class StationsGetTestCase(APITestCase):
     def test_get_stations_status_code(self):
         response = self.client.get(reverse("station-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -43,25 +56,33 @@ class StationsGetTestCase(TestCase):
     def test_get_stations_body(self):
         station1 = Station.objects.create(name="Good 'ol station 1")
         station2 = Station.objects.create(name="Good 'ol station 2")
-        # make sure blocked stations are not listed
-        Station.objects.create(name="Good 'ol station 1", state=StationState.blocked)
+        station3 = Station.objects.create(
+            name="Good 'ol station 1", state=StationState.blocked
+        )
         response = self.client.get(reverse("station-list"))
-        self.assertEqual(
+        self.assertListEqual(
             response.data,
             [
                 {
                     "id": str(station1.id),
                     "name": station1.name,
+                    "activeBikesCount": station1.bikes.count(),
                 },
                 {
                     "id": str(station2.id),
                     "name": station2.name,
+                    "activeBikesCount": station2.bikes.count(),
+                },
+                {
+                    "id": str(station3.id),
+                    "name": station3.name,
+                    "activeBikesCount": station3.bikes.count(),
                 },
             ],
         )
 
 
-class StationDeleteTestCase(TestCase):
+class StationDeleteTestCase(APITestCase):
     def test_delete_station_successful_status_code(self):
         station = Station.objects.create(name="Good 'ol station")
         response = self.client.delete(
@@ -106,7 +127,7 @@ class StationDeleteTestCase(TestCase):
         self.assertEqual(response.data, {"message": "station not found"})
 
 
-class StationBlockTestCase(TestCase):
+class StationBlockTestCase(APITestCase):
     def test_block_station_successful_status_code(self):
         station = Station.objects.create(name="Good 'ol station")
         response = self.client.post(reverse("station-blocked"), {"id": f"{station.id}"})
@@ -132,7 +153,7 @@ class StationBlockTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
-class StationReturnBikeTestCase(TestCase):
+class StationReturnBikeTestCase(APITestCase):
     def test_return_bike_successful_status_code(self):
         user = User.objects.create(first_name="John6", last_name="Doe")
         station = Station.objects.create(
@@ -166,6 +187,7 @@ class StationReturnBikeTestCase(TestCase):
                 "station": {
                     "id": str(station.id),
                     "name": station.name,
+                    "activeBikesCount": station.bikes.count(),
                 },
                 "user": None,
                 "status": BikeStatus.available,

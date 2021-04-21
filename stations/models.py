@@ -22,3 +22,7 @@ class Station(models.Model):
 
     def __str__(self):
         return f"Station at {self.name} ({self.state})"
+
+    def block(self):
+        self.state = StationState.blocked
+        self.save()
