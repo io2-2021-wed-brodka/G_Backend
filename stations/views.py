@@ -26,11 +26,11 @@ class StationViewSet(
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
-    @restrict(UserRole.admin, UserRole.tech, UserRole.user)
+    @restrict(UserRole.admin, UserRole.tech)
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
-    @restrict(UserRole.admin, UserRole.tech, UserRole.user)
+    @restrict(UserRole.admin, UserRole.tech)
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
