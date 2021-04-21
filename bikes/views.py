@@ -105,7 +105,11 @@ class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewS
         return super().list(request, *args, **kwargs)
 
 
-class ReservationsViewSet(viewsets.ModelViewSet):
+class ReservationsViewSet(
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    GenericViewSet,
+):
     queryset = Bike.objects.filter(status=BikeStatus.reserved)
     serializer_class = ReserveBikeSerializer
 
@@ -124,6 +128,7 @@ class ReservationsViewSet(viewsets.ModelViewSet):
 
         return super().handle_exception(exc)
 
+    @restrict(UserRole.user, UserRole.tech, UserRole.admin)
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -143,7 +148,7 @@ class ReservationsViewSet(viewsets.ModelViewSet):
                 },
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
-        # TODO(kboryczka): uncomment once blocking users is introduced
+        # TODO(kboryczka): uncomment once blocking of users is introduced
         # user = somehow_get_user_from_token_in_headers(request)
         # if user.status == UserStatus.blocked:
         #     return Response(
@@ -156,6 +161,11 @@ class ReservationsViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+    @restrict(UserRole.user, UserRole.tech, UserRole.admin)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @restrict(UserRole.user, UserRole.tech, UserRole.admin)
     def destroy(self, request, *args, **kwargs):
         reserved_bike = self.get_object()
         if reserved_bike.status != BikeStatus.reserved:
