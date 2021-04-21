@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+from django.utils import timezone
 
 
 class BikeStatus:
@@ -39,6 +40,22 @@ class Bike(models.Model):
 
     def __str__(self):
         return f"Bike {self.id} ({self.status}), at station {self.station.name}"
+
+    def reserve(self):
+        time = timezone.now()
+        Reservation.objects.create(
+            bike=self,
+            reserved_at=time,
+            reserved_till=time + timezone.timedelta(minutes=30),
+        )
+
+        self.status = BikeStatus.reserved
+        self.save()
+
+    def cancel_reservation(self):
+        reserved_bike.reservation.delete()
+        reserved_bike.status = BikeStatus.available
+        reserved_bike.save()
 
 
 class Reservation(models.Model):

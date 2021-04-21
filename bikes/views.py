@@ -135,15 +135,7 @@ class ReservationsViewSet(viewsets.ModelViewSet):
         #         {"message": "User is blocked"},
         #         status=status.HTTP_403_FORBIDDEN,
         #     )
-        time = timezone.now()
-        Reservation.objects.create(
-            bike=reserved_bike,
-            reserved_at=time,
-            reserved_till=time + timezone.timedelta(minutes=30),
-        )
-
-        reserved_bike.status = BikeStatus.reserved
-        reserved_bike.save()
+        reserved_bike.reserve()
         return Response(
             data=ReserveBikeSerializer(reserved_bike).data,
             status=status.HTTP_201_CREATED,
@@ -156,12 +148,7 @@ class ReservationsViewSet(viewsets.ModelViewSet):
                 {"message": "Bike not reserved"},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
-        reserved_bike = self.get_object()
-        reserved_bike.reservation.delete()
-
-        reserved_bike.status = BikeStatus.available
-        reserved_bike.save()
+        reserved_bike.cancel_reservation()
         return Response(
-            data=ReserveBikeSerializer(reserved_bike).data,
-            status=status.HTTP_200_OK,
+            status=status.HTTP_204_NO_CONTENT,
         )
