@@ -237,7 +237,7 @@ class BikesRentTestCase(APITestCase):
         self.assertEqual(new_bike.station, None)
 
 
-class BikeReservationTestCase(TestCase):
+class BikeReservationTestCase(APITestCase):
     def test_create_reservation(self):
         station = Station.objects.create(name="Station Name create reservation")
         reserved_bike = Bike.objects.create(
@@ -274,6 +274,7 @@ class BikeReservationTestCase(TestCase):
                 "station": {
                     "id": str(reserved_bike.station.id),
                     "name": reserved_bike.station.name,
+                    "activeBikesCount": reserved_bike.station.bikes.count(),
                 },
                 "reservedAt": reserved_bike.reservation.reserved_at,
                 "reservedTill": reserved_bike.reservation.reserved_till,
@@ -291,7 +292,7 @@ class BikeReservationTestCase(TestCase):
     # TODO(kboryczka): add test for blocked user after introducing user blocking
 
 
-class BikeReservationDeleteTestCase(TestCase):
+class BikeReservationDeleteTestCase(APITestCase):
     def test_delete_reservation_status_code(self):
         station = Station.objects.create(name="Station Name delete reservation")
         reserved_bike = Bike.objects.create(station=station, status=BikeStatus.reserved)
