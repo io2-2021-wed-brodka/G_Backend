@@ -1,9 +1,10 @@
 from django.test import TestCase
+from django.utils import timezone
 
 from rest_framework.reverse import reverse
 from rest_framework import status
 
-from bikes.models import Bike, BikeStatus
+from bikes.models import Bike, BikeStatus, Reservation
 from stations.models import Station, StationState
 from users.models import User
 
@@ -229,3 +230,125 @@ class BikesRentTestCase(TestCase):
         self.client.post(reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"})
         new_bike = Bike.objects.get(id=rented_bike.id)
         self.assertEqual(new_bike.station, None)
+
+
+class BikeReservationTestCase(TestCase):
+    def test_create_reservation(self):
+        station = Station.objects.create(name="Station Name create reservation")
+        reserved_bike = Bike.objects.create(
+            station=station, status=BikeStatus.available
+        )
+        response = self.client.post(
+            reverse("bikes-reserved-list"), {"id": reserved_bike.id}
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_reservation_bike_status(self):
+        station = Station.objects.create(
+            name="Station Name create reservation bike status"
+        )
+        reserved_bike = Bike.objects.create(
+            station=station, status=BikeStatus.available
+        )
+        self.client.post(reverse("bikes-reserved-list"), {"id": reserved_bike.id})
+        reserved_bike.refresh_from_db()
+        self.assertEqual(reserved_bike.status, BikeStatus.reserved)
+
+    def test_create_reservation_body(self):
+        station = Station.objects.create(name="Station Name create reservation body")
+        reserved_bike = Bike.objects.create(
+            station=station, status=BikeStatus.available
+        )
+        response = self.client.post(
+            reverse("bikes-reserved-list"), {"id": reserved_bike.id}
+        )
+        self.assertEqual(
+            response.data,
+            {
+                "id": str(reserved_bike.id),
+                "station": {
+                    "id": str(reserved_bike.station.id),
+                    "name": reserved_bike.station.name,
+                },
+                "reservedAt": reserved_bike.reservation.reserved_at,
+                "reservedTill": reserved_bike.reservation.reserved_till,
+            },
+        )
+
+    def test_reservation_already_exist(self):
+        station = Station.objects.create(name="Station Name reservation already exists")
+        reserved_bike = Bike.objects.create(station=station, status=BikeStatus.reserved)
+        response = self.client.post(
+            reverse("bikes-reserved-list"), {"id": reserved_bike.id}
+        )
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    # TODO(kboryczka): add test for blocked user after introducing user blocking
+
+
+class BikeReservationDeleteTestCase(TestCase):
+    def test_delete_reservation_status_code(self):
+        station = Station.objects.create(name="Station Name delete reservation")
+        reserved_bike = Bike.objects.create(station=station, status=BikeStatus.reserved)
+        time = timezone.now()
+        reservation = Reservation.objects.create(
+            bike=reserved_bike,
+            reserved_at=time,
+            reserved_till=time + timezone.timedelta(minutes=30),
+        )
+        reserved_bike.reservation = reservation
+        reserved_bike.save()
+        response = self.client.delete(
+            reverse("bikes-reserved-detail", kwargs={"pk": str(reserved_bike.id)})
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_reservation_bike_status(self):
+        station = Station.objects.create(
+            name="Station Name delete reservation bike status"
+        )
+        reserved_bike = Bike.objects.create(station=station, status=BikeStatus.reserved)
+        time = timezone.now()
+        reservation = Reservation.objects.create(
+            bike=reserved_bike,
+            reserved_at=time,
+            reserved_till=time + timezone.timedelta(minutes=30),
+        )
+        reserved_bike.reservation = reservation
+        reserved_bike.save()
+        self.client.delete(
+            reverse("bikes-reserved-detail", kwargs={"pk": str(reserved_bike.id)})
+        )
+        reserved_bike.refresh_from_db()
+        self.assertEqual(reserved_bike.status, BikeStatus.available)
+
+    def test_delete_reservation_body(self):
+        station = Station.objects.create(name="Station Name delete reservation body")
+        reserved_bike = Bike.objects.create(station=station, status=BikeStatus.reserved)
+        time = timezone.now()
+        reservation = Reservation.objects.create(
+            bike=reserved_bike,
+            reserved_at=time,
+            reserved_till=time + timezone.timedelta(minutes=30),
+        )
+        reserved_bike.reservation = reservation
+        reserved_bike.save()
+        response = self.client.delete(
+            reverse("bikes-reserved-detail", kwargs={"pk": str(reserved_bike.id)})
+        )
+        self.assertEqual(
+            response.data,
+            None,
+        )
+
+    def test_delete_reservation_bike_not_reserved(self):
+        station = Station.objects.create(
+            name="Station Name delete reservation bike not reserved"
+        )
+        reserved_bike = Bike.objects.create(
+            station=station, status=BikeStatus.available
+        )
+        response = self.client.delete(
+            reverse("bikes-reserved-detail", kwargs={"pk": str(reserved_bike.id)})
+        )
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)

@@ -1,13 +1,17 @@
+from django.http import Http404
 from rest_framework import viewsets, status
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from bikes.models import Bike, BikeStatus
+
 from bikes.serializers import (
     ReadBikeSerializer,
     CreateBikeSerializer,
     RentBikeSerializer,
+    ReserveBikeSerializer,
+    ReserveIdSerializer,
 )
 from stations.models import Station, StationState
 
@@ -36,6 +40,7 @@ class BikeViewSet(ModelViewSet):
 
 class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
     queryset = Bike.objects.filter(status=BikeStatus.rented)
+    serializer_class = ReadBikeSerializer
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -81,4 +86,68 @@ class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewS
         return Response(
             {"message": "Bike is not available, it is rented, blocked or reserved"},
             status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        )
+
+
+class ReservationsViewSet(viewsets.ModelViewSet):
+    queryset = Bike.objects.filter(status=BikeStatus.reserved)
+    serializer_class = ReserveBikeSerializer
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return ReserveIdSerializer
+        else:
+            return ReserveBikeSerializer
+
+    def handle_exception(self, exc):
+        if isinstance(exc, Http404):
+            return Response(
+                {"message": "Bike not reserved"},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+
+        return super().handle_exception(exc)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            reserved_bike = Bike.objects.get(id=request.data.get("id"))
+        except Bike.DoesNotExist:
+            return Response(
+                {"message": "Bike not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        if (
+            reserved_bike.status != BikeStatus.available
+            or reserved_bike.station.state == StationState.blocked
+        ):
+            return Response(
+                {
+                    "message": "Bike already blocked, rented or reserved, or station is blocked"
+                },
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        # TODO(kboryczka): uncomment once blocking users is introduced
+        # user = somehow_get_user_from_token_in_headers(request)
+        # if user.status == UserStatus.blocked:
+        #     return Response(
+        #         {"message": "User is blocked"},
+        #         status=status.HTTP_403_FORBIDDEN,
+        #     )
+        reserved_bike.reserve()
+        return Response(
+            data=ReserveBikeSerializer(reserved_bike).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    def destroy(self, request, *args, **kwargs):
+        reserved_bike = self.get_object()
+        if reserved_bike.status != BikeStatus.reserved:
+            return Response(
+                {"message": "Bike not reserved"},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        reserved_bike.cancel_reservation()
+        return Response(
+            status=status.HTTP_204_NO_CONTENT,
         )
