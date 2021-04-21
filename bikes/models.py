@@ -53,9 +53,9 @@ class Bike(models.Model):
         self.save()
 
     def cancel_reservation(self):
-        reserved_bike.reservation.delete()
-        reserved_bike.status = BikeStatus.available
-        reserved_bike.save()
+        self.reservation.delete()
+        self.status = BikeStatus.available
+        self.save()
 
 
 class Reservation(models.Model):

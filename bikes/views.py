@@ -1,11 +1,10 @@
 from django.http import Http404
-from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from bikes.models import Bike, BikeStatus, Reservation
+from bikes.models import Bike, BikeStatus
 
 from bikes.serializers import (
     ReadBikeSerializer,
