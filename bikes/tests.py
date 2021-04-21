@@ -301,7 +301,7 @@ class BikeReservationDeleteTestCase(TestCase):
         response = self.client.delete(
             reverse("bikes-reserved-detail", kwargs={"pk": str(reserved_bike.id)})
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_delete_reservation_bike_status(self):
         station = Station.objects.create(
@@ -338,15 +338,7 @@ class BikeReservationDeleteTestCase(TestCase):
         )
         self.assertEqual(
             response.data,
-            {
-                "id": str(reserved_bike.id),
-                "station": {
-                    "id": str(reserved_bike.station.id),
-                    "name": reserved_bike.station.name,
-                },
-                "reservedAt": reserved_bike.reservation.reserved_at,
-                "reservedTill": reserved_bike.reservation.reserved_till,
-            },
+            None,
         )
 
     def test_delete_reservation_bike_not_reserved(self):
