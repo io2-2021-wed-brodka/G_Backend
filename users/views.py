@@ -1,12 +1,15 @@
 from django.contrib.auth import authenticate
-from rest_framework import status
+from rest_framework import status, mixins
 from rest_framework.authtoken.models import Token
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import GenericViewSet
 
-from users.models import User, UserRole
-from users.serializers import RegisterSerializer, LoginSerializer
+from core.decorators import restrict
+from users.models import User, UserRole, UserState
+from users.serializers import RegisterSerializer, LoginSerializer, ReadUserSerializer
 
 
 class RegisterAPIView(APIView):
@@ -73,4 +76,65 @@ class LogoutAPIView(APIView):
         return Response(
             status=status.HTTP_204_NO_CONTENT,
             data={"message": "Successfully logged out."},
+        )
+
+
+class UserListAPIView(ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = ReadUserSerializer
+
+    @restrict(UserRole.admin)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+
+class UserBlockedViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    GenericViewSet,
+):
+    queryset = User.objects.filter(state=UserState.blocked)
+    serializer_class = ReadUserSerializer
+
+    @restrict(UserRole.admin)
+    def create(self, request, *args, **kwargs):
+        try:
+            user = User.objects.get(id=request.data.get("id"))
+        except User.DoesNotExist:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND, data={"message": "User not found."}
+            )
+        if user.state == UserState.blocked:
+            return Response(
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                data={"message": "User already blocked."},
+            )
+        # this one is not in specification, but made sense
+        if user.role != UserRole.user:
+            return Response(
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                data={"message": "Can only block users."},
+            )
+        user.block()
+        return Response(
+            status=status.HTTP_201_CREATED, data=ReadUserSerializer(user).data
+        )
+
+    @restrict(UserRole.admin)
+    def destroy(self, request, *args, **kwargs):
+        try:
+            user = User.objects.get(id=request.data.get("id"))
+        except User.DoesNotExist:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND, data={"message": "User not found."}
+            )
+        if user.state == UserState.active:
+            return Response(
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                data={"message": "User not blocked."},
+            )
+        user.unblock()
+        return Response(
+            status=status.HTTP_204_NO_CONTENT, data=ReadUserSerializer(user).data
         )

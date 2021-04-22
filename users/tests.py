@@ -3,7 +3,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.reverse import reverse
 
 from core.testcases import APITestCase
-from users.models import User, UserRole
+from users.models import User, UserRole, UserState
 
 
 class RegisterTestCase(APITestCase):
@@ -143,14 +143,72 @@ class LogoutTestCase(APITestCase):
         response = self.client.post(
             reverse("logout"),
         )
-        # TODO(tkarwowski): revisit after logout is officially in specification
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    # TODO(tkarwowski): revisit after logout is officially in specification
     # def test_logout_unauthorized_body(self):
     #     # drop authentication done in APITestCase.setUp
     #     self.client.force_authenticate(user=None)
     #     response = self.client.post(
     #         reverse("logout"),
     #     )
-    #     self.assertEqual(response.data, {"message": "Invalid token."})
+    #     self.assertEqual(response.data, {"message": "Unauthorized."})
+
+
+class UserListTestCase(APITestCase):
+    def test_list_users_status_code(self):
+        response = self.client.get(reverse("user-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_list_users_body(self):
+        user1 = User.objects.create(username="user1", role=UserRole.user)
+        user2 = User.objects.create(username="user2", role=UserRole.user)
+        response = self.client.get(reverse("user-list"))
+        self.assertListEqual(
+            response.data,
+            [
+                {
+                    # we create one admin account for authentication,
+                    # we need to consider him here
+                    "id": str(self.user.id),
+                    "name": str(self.user.name),
+                },
+                {
+                    "id": str(user1.id),
+                    "name": str(user1.name),
+                },
+                {
+                    "id": str(user2.id),
+                    "name": str(user2.name),
+                },
+            ],
+        )
+
+
+class UserBlockedListTestCase(APITestCase):
+    def test_list_blocked_users_status_code(self):
+        response = self.client.get(reverse("users-blocked-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_list_users_body(self):
+        User.objects.create(username="user0", role=UserRole.user)
+        user1 = User.objects.create(
+            username="user1", role=UserRole.user, state=UserState.blocked
+        )
+        user2 = User.objects.create(
+            username="user2", role=UserRole.user, state=UserState.blocked
+        )
+        User.objects.create(username="user3", role=UserRole.user)
+        response = self.client.get(reverse("users-blocked-list"))
+        self.assertListEqual(
+            response.data,
+            [
+                {
+                    "id": str(user1.id),
+                    "name": str(user1.name),
+                },
+                {
+                    "id": str(user2.id),
+                    "name": str(user2.name),
+                },
+            ],
+        )
