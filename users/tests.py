@@ -212,3 +212,83 @@ class UserBlockedListTestCase(APITestCase):
                 },
             ],
         )
+
+
+class UserBlockTestCase(APITestCase):
+    def test_block_user_status_code(self):
+        user = User.objects.create(username="user0", role=UserRole.user)
+        response = self.client.post(reverse("users-blocked-list"), data={"id": user.id})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_block_user_body(self):
+        user = User.objects.create(username="user0", role=UserRole.user)
+        response = self.client.post(reverse("users-blocked-list"), data={"id": user.id})
+        self.assertDictEqual(
+            response.data,
+            {
+                "id": str(user.id),
+                "name": str(user.name),
+            },
+        )
+
+    def test_block_user_user_gets_blocked(self):
+        user = User.objects.create(username="user0", role=UserRole.user)
+        self.client.post(reverse("users-blocked-list"), data={"id": user.id})
+        user.refresh_from_db()
+        self.assertEqual(user.state, UserState.blocked)
+
+    def test_block_user_fails_already_blocked_status_code(self):
+        user = User.objects.create(
+            username="user0", role=UserRole.user, state=UserState.blocked
+        )
+        response = self.client.post(reverse("users-blocked-list"), data={"id": user.id})
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    def test_block_user_fails_already_blocked_body(self):
+        user = User.objects.create(
+            username="user0", role=UserRole.user, state=UserState.blocked
+        )
+        response = self.client.post(reverse("users-blocked-list"), data={"id": user.id})
+        self.assertEqual(response.data, {"message": "User already blocked."})
+
+
+class UserUnblockTestCase(APITestCase):
+    def test_unblock_user_status_code(self):
+        user = User.objects.create(
+            username="user0", role=UserRole.user, state=UserState.blocked
+        )
+        response = self.client.delete(
+            reverse("users-blocked-detail", kwargs={"pk": user.id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_unblock_user_body(self):
+        user = User.objects.create(
+            username="user0", role=UserRole.user, state=UserState.blocked
+        )
+        response = self.client.delete(
+            reverse("users-blocked-detail", kwargs={"pk": user.id})
+        )
+        self.assertEqual(response.data, None)
+
+    def test_unblock_user_user_gets_unblocked(self):
+        user = User.objects.create(
+            username="user0", role=UserRole.user, state=UserState.blocked
+        )
+        self.client.delete(reverse("users-blocked-detail", kwargs={"pk": user.id}))
+        user.refresh_from_db()
+        self.assertEqual(user.state, UserState.active)
+
+    # def test_unblock_user_fails_already_unblocked_status_code(self):
+    #     user = User.objects.create(username="user0", role=UserRole.user)
+    #     response = self.client.delete(
+    #         reverse("users-blocked-detail", kwargs={"pk": user.id})
+    #     )
+    #     self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+    #
+    # def test_unblock_user_fails_already_unblocked_body(self):
+    #     user = User.objects.create(username="user0", role=UserRole.user)
+    #     response = self.client.delete(
+    #         reverse("users-blocked-detail", kwargs={"pk": user.id})
+    #     )
+    #     self.assertEqual(response.data, {"message": "User already blocked."})

@@ -123,18 +123,11 @@ class UserBlockedViewSet(
 
     @restrict(UserRole.admin)
     def destroy(self, request, *args, **kwargs):
-        try:
-            user = User.objects.get(id=request.data.get("id"))
-        except User.DoesNotExist:
-            return Response(
-                status=status.HTTP_404_NOT_FOUND, data={"message": "User not found."}
-            )
+        user = self.get_object()
         if user.state == UserState.active:
             return Response(
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 data={"message": "User not blocked."},
             )
         user.unblock()
-        return Response(
-            status=status.HTTP_204_NO_CONTENT, data=ReadUserSerializer(user).data
-        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
