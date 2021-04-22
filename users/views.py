@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from django.http import Http404
 from rest_framework import status, mixins
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import ListAPIView
@@ -96,6 +97,15 @@ class UserBlockedViewSet(
 ):
     queryset = User.objects.filter(state=UserState.blocked)
     serializer_class = ReadUserSerializer
+
+    def handle_exception(self, exc):
+        if isinstance(exc, Http404):
+            return Response(
+                {"message": "Bike not reserved"},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+
+        return super().handle_exception(exc)
 
     @restrict(UserRole.admin)
     def create(self, request, *args, **kwargs):

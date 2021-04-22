@@ -279,16 +279,16 @@ class UserUnblockTestCase(APITestCase):
         user.refresh_from_db()
         self.assertEqual(user.state, UserState.active)
 
-    # def test_unblock_user_fails_already_unblocked_status_code(self):
-    #     user = User.objects.create(username="user0", role=UserRole.user)
-    #     response = self.client.delete(
-    #         reverse("users-blocked-detail", kwargs={"pk": user.id})
-    #     )
-    #     self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
-    #
-    # def test_unblock_user_fails_already_unblocked_body(self):
-    #     user = User.objects.create(username="user0", role=UserRole.user)
-    #     response = self.client.delete(
-    #         reverse("users-blocked-detail", kwargs={"pk": user.id})
-    #     )
-    #     self.assertEqual(response.data, {"message": "User already blocked."})
+    def test_unblock_user_fails_already_unblocked_status_code(self):
+        user = User.objects.create(username="user0", role=UserRole.user)
+        response = self.client.delete(
+            reverse("users-blocked-detail", kwargs={"pk": user.id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    def test_unblock_user_fails_already_unblocked_body(self):
+        user = User.objects.create(username="user0", role=UserRole.user)
+        response = self.client.delete(
+            reverse("users-blocked-detail", kwargs={"pk": user.id})
+        )
+        self.assertEqual(response.data, {"message": "Bike not reserved"})

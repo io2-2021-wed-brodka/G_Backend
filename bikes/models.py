@@ -34,6 +34,12 @@ class Bike(models.Model):
     def __str__(self):
         return f"Bike {self.id} ({self.status}), at station {self.station.name}"
 
+    def rent(self, user):
+        self.user = user
+        self.status = BikeStatus.rented
+        self.station = None
+        self.save()
+
     def return_to_station(self, station):
         self.station = station
         self.status = BikeStatus.available

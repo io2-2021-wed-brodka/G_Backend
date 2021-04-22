@@ -15,7 +15,7 @@ from bikes.serializers import (
 )
 from core.decorators import restrict
 from stations.models import Station, StationState
-from users.models import UserRole
+from users.models import UserRole, UserState
 
 
 class BikeViewSet(
@@ -24,7 +24,7 @@ class BikeViewSet(
     mixins.DestroyModelMixin,
     GenericViewSet,
 ):
-    queryset = Bike.objects.filter(status=BikeStatus.available)
+    queryset = Bike.objects.all()
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -67,32 +67,29 @@ class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewS
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            rented_bike = Bike.objects.get(id=request.data.get("id"))
+            bike = Bike.objects.get(id=request.data.get("id"))
         except Bike.DoesNotExist:
             return Response(
-                {"message": "bike not found"}, status=status.HTTP_404_NOT_FOUND
+                {"message": "Bike not found."}, status=status.HTTP_404_NOT_FOUND
             )
-        # TODO(kkrolik): uncomment once blocking users is introduced
-        # if request.user.status == UserStatus.blocked:
-        #     return Response(
-        #         {"message": "Blocked users are not allowed to rent bikes"},
-        #         status=status.HTTP_403_FORBIDDEN,
-        #     )
+        if request.user.state == UserState.blocked:
+            return Response(
+                {"message": "Blocked users are not allowed to rent bikes."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         try:
-            Station.objects.get(id=rented_bike.station.id, state=StationState.blocked)
+            Station.objects.get(id=bike.station.id, state=StationState.blocked)
         except Station.DoesNotExist:
-            if not rented_bike.status == BikeStatus.available:
+            if not bike.status == BikeStatus.available:
                 return Response(
                     {
                         "message": "Bike is not available, it is rented, blocked or reserved"
                     },
                     status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 )
-            rented_bike.status = BikeStatus.rented
-            rented_bike.station = None
-            rented_bike.save()
+            bike.rent(self.request.user)
             return Response(
-                data=ReadBikeSerializer(rented_bike).data,
+                data=ReadBikeSerializer(bike).data,
                 status=status.HTTP_201_CREATED,
             )
         return Response(
@@ -130,6 +127,11 @@ class ReservationsViewSet(
 
     @restrict(UserRole.user, UserRole.tech, UserRole.admin)
     def create(self, request, *args, **kwargs):
+        if request.user.state == UserState.blocked:
+            return Response(
+                {"message": "Blocked users are not allowed to rent bikes."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -138,23 +140,16 @@ class ReservationsViewSet(
             return Response(
                 {"message": "Bike not found"}, status=status.HTTP_404_NOT_FOUND
             )
-        if (
-            reserved_bike.status != BikeStatus.available
-            or reserved_bike.station.state == StationState.blocked
-        ):
+        if reserved_bike.status != BikeStatus.available:
             return Response(
-                {
-                    "message": "Bike already blocked, rented or reserved, or station is blocked"
-                },
+                {"message": "Bike already blocked, rented or reserved."},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
-        # TODO(kboryczka): uncomment once blocking of users is introduced
-        # user = somehow_get_user_from_token_in_headers(request)
-        # if user.status == UserStatus.blocked:
-        #     return Response(
-        #         {"message": "User is blocked"},
-        #         status=status.HTTP_403_FORBIDDEN,
-        #     )
+        if reserved_bike.station.state == StationState.blocked:
+            return Response(
+                {"message": "Station is blocked."},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
         reserved_bike.reserve()
         return Response(
             data=ReserveBikeSerializer(reserved_bike).data,

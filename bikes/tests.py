@@ -16,20 +16,18 @@ class BikesGetTestCase(APITestCase):
 
     def test_get_bikes_body(self):
         user = User.objects.create(first_name="John", last_name="Doe")
-        station = Station.objects.create(name="Station Name")
-        bike1 = Bike.objects.create(user=user, station=station)
-        bike2 = Bike.objects.create(user=user, station=station)
+        station1 = Station.objects.create(name="Station Name 1")
+        station2 = Station.objects.create(name="Station Name 2")
+        bike1 = Bike.objects.create(status=BikeStatus.rented, user=user)
+        bike2 = Bike.objects.create(station=station1)
+        bike3 = Bike.objects.create(status=BikeStatus.reserved, station=station2)
         response = self.client.get(reverse("bike-list"))
-        self.assertEqual(
+        self.assertListEqual(
             response.data,
             [
                 {
                     "id": str(bike1.id),
-                    "station": {
-                        "id": str(bike1.station.id),
-                        "name": bike1.station.name,
-                        "activeBikesCount": bike1.station.bikes.count(),
-                    },
+                    "station": None,
                     "user": {"id": str(user.id), "name": user.name},
                     "status": bike1.status,
                 },
@@ -40,8 +38,18 @@ class BikesGetTestCase(APITestCase):
                         "name": bike2.station.name,
                         "activeBikesCount": bike2.station.bikes.count(),
                     },
-                    "user": {"id": str(user.id), "name": user.name},
+                    "user": None,
                     "status": bike2.status,
+                },
+                {
+                    "id": str(bike3.id),
+                    "station": {
+                        "id": str(bike3.station.id),
+                        "name": bike3.station.name,
+                        "activeBikesCount": bike3.station.bikes.count(),
+                    },
+                    "user": None,
+                    "status": bike3.status,
                 },
             ],
         )
@@ -135,22 +143,16 @@ class BikesGetRentedTestCase(APITestCase):
 
 class BikesRentTestCase(APITestCase):
     def test_rent_bike_status_code(self):
-        user = User.objects.create(first_name="John", last_name="Doe")
         station = Station.objects.create(name="Station Name")
-        rented_bike = Bike.objects.create(
-            user=user, station=station, status=BikeStatus.available
-        )
+        rented_bike = Bike.objects.create(station=station, status=BikeStatus.available)
         response = self.client.post(
             reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_rent_bike_body(self):
-        user = User.objects.create(first_name="John2", last_name="Doe")
         station = Station.objects.create(name="Station Name")
-        rented_bike = Bike.objects.create(
-            user=user, station=station, status=BikeStatus.available
-        )
+        rented_bike = Bike.objects.create(station=station, status=BikeStatus.available)
         response = self.client.post(
             reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
         )
@@ -159,79 +161,68 @@ class BikesRentTestCase(APITestCase):
             {
                 "id": str(rented_bike.id),
                 "station": None,
-                "user": {"id": str(user.id), "name": user.name},
+                "user": {"id": str(self.user.id), "name": self.user.name},
                 "status": BikeStatus.rented,
             },
         )
 
-    # TODO(kkrolik): add test for blocked user after introducing user blocking
-
-    def test_rent_bike_blocked(self):
-        user = User.objects.create(first_name="John3", last_name="Doe")
-        station = Station.objects.create(name="Station Name already blocked")
-        rented_bike = Bike.objects.create(
-            user=user, station=station, status=BikeStatus.blocked
+    def test_rent_bike_fail_user_blocked_status_code(self):
+        self.user.block()
+        station = Station.objects.create(name="Station Name")
+        rented_bike = Bike.objects.create(station=station, status=BikeStatus.available)
+        response = self.client.post(
+            reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
         )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_rent_bike_fails_bike_blocked(self):
+        station = Station.objects.create(name="Station Name")
+        rented_bike = Bike.objects.create(station=station, status=BikeStatus.blocked)
         response = self.client.post(
             reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
         )
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-    def test_rent_bike_already_rented(self):
-        user = User.objects.create(first_name="John4", last_name="Doe")
-        station = Station.objects.create(name="Station Name already rented")
-        rented_bike = Bike.objects.create(
-            user=user, station=station, status=BikeStatus.rented
-        )
+    def test_rent_bike_fails_bike_already_rented(self):
+        station = Station.objects.create(name="Station Name")
+        rented_bike = Bike.objects.create(station=station, status=BikeStatus.rented)
         response = self.client.post(
             reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
         )
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
     def test_rent_bike_already_reserved(self):
-        user = User.objects.create(first_name="John5", last_name="Doe")
-        station = Station.objects.create(name="Station Name already reserved")
-        rented_bike = Bike.objects.create(
-            user=user, station=station, status=BikeStatus.reserved
-        )
+        station = Station.objects.create(name="Station Name")
+        rented_bike = Bike.objects.create(station=station, status=BikeStatus.reserved)
         response = self.client.post(
             reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
         )
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
     def test_rent_bike_station_blocked(self):
-        user = User.objects.create(first_name="John4", last_name="Doe")
         station = Station.objects.create(
-            name="Station Name already rented", state=StationState.blocked
+            name="Station Name", state=StationState.blocked
         )
-        rented_bike = Bike.objects.create(
-            user=user, station=station, status=BikeStatus.available
-        )
+        rented_bike = Bike.objects.create(station=station, status=BikeStatus.available)
         response = self.client.post(
             reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
         )
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
     def test_rent_bike_status_changes_to_rented(self):
-        user = User.objects.create(first_name="John6", last_name="Doe")
         station = Station.objects.create(
             name="Station Name already rented x", state=StationState.working
         )
-        rented_bike = Bike.objects.create(
-            user=user, station=station, status=BikeStatus.available
-        )
+        rented_bike = Bike.objects.create(station=station, status=BikeStatus.available)
         self.client.post(reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"})
         new_bike = Bike.objects.get(id=rented_bike.id)
         self.assertEqual(new_bike.status, BikeStatus.rented)
 
     def test_rent_bike_station_changes_to_null(self):
-        user = User.objects.create(first_name="John8", last_name="Doe")
         station = Station.objects.create(
             name="Station Name already rented x", state=StationState.working
         )
-        rented_bike = Bike.objects.create(
-            user=user, station=station, status=BikeStatus.available
-        )
+        rented_bike = Bike.objects.create(station=station, status=BikeStatus.available)
         self.client.post(reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"})
         new_bike = Bike.objects.get(id=rented_bike.id)
         self.assertEqual(new_bike.station, None)
@@ -289,7 +280,29 @@ class BikeReservationTestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-    # TODO(kboryczka): add test for blocked user after introducing user blocking
+    def test_reservation_fails_user_blocked_status_code(self):
+        self.user.block()
+        station = Station.objects.create(name="Station Name reservation already exists")
+        reserved_bike = Bike.objects.create(
+            station=station, status=BikeStatus.available
+        )
+        response = self.client.post(
+            reverse("bikes-reserved-list"), {"id": reserved_bike.id}
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_reservation_fails_user_blocked_body(self):
+        self.user.block()
+        station = Station.objects.create(name="Station Name reservation already exists")
+        reserved_bike = Bike.objects.create(
+            station=station, status=BikeStatus.available
+        )
+        response = self.client.post(
+            reverse("bikes-reserved-list"), {"id": reserved_bike.id}
+        )
+        self.assertDictEqual(
+            response.data, {"message": "Blocked users are not allowed to rent bikes."}
+        )
 
 
 class BikeReservationDeleteTestCase(APITestCase):

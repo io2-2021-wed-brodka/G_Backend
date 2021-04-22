@@ -80,7 +80,7 @@ class StationViewSet(
             return Response(
                 {"message": "Bike not found"}, status=status.HTTP_404_NOT_FOUND
             )
-        station = Station.objects.get(id=kwargs["pk"])
+        station = self.get_object()
         if station.state == StationState.blocked:
             return Response(
                 {

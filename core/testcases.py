@@ -9,6 +9,9 @@ from users.models import User, UserRole
 class APITestCase(TestCase):
     def setUp(self):
         super().setUp()
+        # help for debugging
+        self.maxDiff = None
+
         self.user = User.objects.create_user(
             username="john", password="john", role=UserRole.admin
         )
