@@ -103,16 +103,15 @@ class BikesGetRentedTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_bikes_body(self):
-        user = User.objects.create(first_name="John", last_name="Doe")
         station = Station.objects.create(name="Station Name")
-        Bike.objects.create(user=user, station=station, status=BikeStatus.available)
+        Bike.objects.create(station=station, status=BikeStatus.available)
         bike1 = Bike.objects.create(
-            user=user, station=station, status=BikeStatus.rented
+            user=self.user, station=station, status=BikeStatus.rented
         )
         bike2 = Bike.objects.create(
-            user=user, station=station, status=BikeStatus.rented
+            user=self.user, station=station, status=BikeStatus.rented
         )
-        Bike.objects.create(user=user, station=station, status=BikeStatus.available)
+        Bike.objects.create(station=station, status=BikeStatus.available)
         response = self.client.get(reverse("bikes-rented-list"))
         self.assertEqual(
             response.data,
@@ -124,7 +123,7 @@ class BikesGetRentedTestCase(APITestCase):
                         "name": bike1.station.name,
                         "activeBikesCount": bike1.station.bikes.count(),
                     },
-                    "user": {"id": str(user.id), "name": user.name},
+                    "user": {"id": str(self.user.id), "name": self.user.name},
                     "status": bike1.status,
                 },
                 {
@@ -134,7 +133,7 @@ class BikesGetRentedTestCase(APITestCase):
                         "name": bike2.station.name,
                         "activeBikesCount": bike2.station.bikes.count(),
                     },
-                    "user": {"id": str(user.id), "name": user.name},
+                    "user": {"id": str(self.user.id), "name": self.user.name},
                     "status": bike2.status,
                 },
             ],

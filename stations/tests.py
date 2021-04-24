@@ -4,7 +4,6 @@ from rest_framework.reverse import reverse
 from bikes.models import Bike, BikeStatus
 from core.testcases import APITestCase
 from stations.models import Station, StationState
-from users.models import User
 
 
 class StationCreateTestCase(APITestCase):
@@ -116,7 +115,7 @@ class StationDeleteTestCase(APITestCase):
         response = self.client.delete(
             reverse("station-detail", kwargs={"pk": station.id})
         )
-        self.assertEqual(response.data, {"message": "station has bikes"})
+        self.assertEqual(response.data, {"message": "Station has bikes."})
 
     def test_delete_station_not_found_status_code(self):
         response = self.client.delete(reverse("station-detail", kwargs={"pk": "abc"}))
@@ -124,7 +123,7 @@ class StationDeleteTestCase(APITestCase):
 
     def test_delete_station_not_found_body(self):
         response = self.client.delete(reverse("station-detail", kwargs={"pk": "abc"}))
-        self.assertEqual(response.data, {"message": "station not found"})
+        self.assertEqual(response.data, {"message": "Station not found."})
 
 
 class StationBlockTestCase(APITestCase):
@@ -155,12 +154,11 @@ class StationBlockTestCase(APITestCase):
 
 class StationReturnBikeTestCase(APITestCase):
     def test_return_bike_successful_status_code(self):
-        user = User.objects.create(first_name="John6", last_name="Doe")
         station = Station.objects.create(
             name="Station Name", state=StationState.working
         )
         returned_bike = Bike.objects.create(
-            user=user, station=None, status=BikeStatus.rented
+            user=self.user, station=None, status=BikeStatus.rented
         )
         response = self.client.post(
             reverse("station-bikes", kwargs={"pk": station.id}),
@@ -169,12 +167,11 @@ class StationReturnBikeTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_return_bike_successful_body(self):
-        user = User.objects.create(first_name="John6", last_name="Doe")
         station = Station.objects.create(
             name="Station Name", state=StationState.working
         )
         returned_bike = Bike.objects.create(
-            user=user, station=None, status=BikeStatus.rented
+            user=self.user, station=None, status=BikeStatus.rented
         )
         response = self.client.post(
             reverse("station-bikes", kwargs={"pk": station.id}),
@@ -195,12 +192,11 @@ class StationReturnBikeTestCase(APITestCase):
         )
 
     def test_return_bike_not_found(self):
-        user = User.objects.create(first_name="John6", last_name="Doe")
         station = Station.objects.create(
             name="Station Name", state=StationState.working
         )
         returned_bike = Bike.objects.create(
-            user=user, station=None, status=BikeStatus.rented
+            user=self.user, station=None, status=BikeStatus.rented
         )
         delete_id = returned_bike.id
         Bike.objects.filter(id=returned_bike.id).delete()
@@ -210,12 +206,11 @@ class StationReturnBikeTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_return_bike_station_not_none(self):
-        user = User.objects.create(first_name="John6", last_name="Doe")
         station = Station.objects.create(
             name="Station Name", state=StationState.working
         )
         returned_bike = Bike.objects.create(
-            user=user, station=station, status=BikeStatus.rented
+            user=self.user, station=station, status=BikeStatus.rented
         )
         response = self.client.post(
             reverse("station-bikes", kwargs={"pk": station.id}),
@@ -223,16 +218,73 @@ class StationReturnBikeTestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-    def test_return_bike_station_blocked(self):
-        user = User.objects.create(first_name="John6", last_name="Doe")
+    def test_return_bike_fails_station_blocked(self):
         station = Station.objects.create(
             name="Station Name", state=StationState.blocked
         )
         returned_bike = Bike.objects.create(
-            user=user, station=None, status=BikeStatus.rented
+            user=self.user, station=None, status=BikeStatus.rented
         )
         response = self.client.post(
             reverse("station-bikes", kwargs={"pk": station.id}),
             {"id": f"{returned_bike.id}"},
         )
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    def test_return_bike_fails_station_over_capacity(self):
+        station = Station.objects.create(name="Station Name", capacity=0)
+        returned_bike = Bike.objects.create(
+            user=self.user, station=None, status=BikeStatus.rented
+        )
+        response = self.client.post(
+            reverse("station-bikes", kwargs={"pk": station.id}),
+            {"id": f"{returned_bike.id}"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertEqual(
+            response.data,
+            {
+                "message": "Cannot associate specified bike with specified station, station is full."
+            },
+        )
+
+
+class ListBikesAtStationTestCase(APITestCase):
+    def test_list_bikes_at_station_status_code(self):
+        response = self.client.get(reverse("station-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_list_bikes_at_station_body(self):
+        station1 = Station.objects.create(name="Station Name 1")
+        station2 = Station.objects.create(name="Station Name 2")
+        Bike.objects.create(status=BikeStatus.rented, user=self.user)
+        bike1 = Bike.objects.create(station=station1)
+        bike2 = Bike.objects.create(station=station1)
+        Bike.objects.create(station=station2)
+        Bike.objects.create(status=BikeStatus.reserved, station=station2)
+        response = self.client.get(reverse("station-bikes", kwargs={"pk": station1.id}))
+        self.assertListEqual(
+            response.data,
+            [
+                {
+                    "id": str(bike1.id),
+                    "station": {
+                        "id": str(bike1.station.id),
+                        "name": bike1.station.name,
+                        "activeBikesCount": bike1.station.bikes.count(),
+                    },
+                    "user": None,
+                    "status": bike1.status,
+                },
+                {
+                    "id": str(bike2.id),
+                    "station": {
+                        "id": str(bike2.station.id),
+                        "name": bike2.station.name,
+                        "activeBikesCount": bike2.station.bikes.count(),
+                    },
+                    "user": None,
+                    "status": bike2.status,
+                },
+            ],
+        )

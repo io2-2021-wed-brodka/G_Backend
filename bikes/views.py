@@ -53,8 +53,8 @@ class BikeViewSet(
 
 
 class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
-    queryset = Bike.objects.filter(status=BikeStatus.rented)
-    serializer_class = ReadBikeSerializer
+    def get_queryset(self):
+        return Bike.objects.filter(status=BikeStatus.rented, user=self.request.user)
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -107,8 +107,8 @@ class ReservationsViewSet(
     mixins.DestroyModelMixin,
     GenericViewSet,
 ):
-    queryset = Bike.objects.filter(status=BikeStatus.reserved)
-    serializer_class = ReserveBikeSerializer
+    def get_queryset(self):
+        return Bike.objects.filter(reservation__user=self.request.user)
 
     def get_serializer_class(self):
         if self.action == "create":

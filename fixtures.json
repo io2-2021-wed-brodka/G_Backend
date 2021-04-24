@@ -193,7 +193,8 @@
     "pk": "0385dcaa-5424-4046-b707-015334ef4f70",
     "fields": {
       "state": "working",
-      "name": "Zoo"
+      "name": "Zoo",
+      "capacity": 10
     }
   },
   {
@@ -201,7 +202,8 @@
     "pk": "0948fbdf-7ad2-467a-a7b2-8a2e008833b2",
     "fields": {
       "state": "working",
-      "name": "Łazienki"
+      "name": "Łazienki",
+      "capacity": 10
     }
   },
   {
@@ -209,7 +211,8 @@
     "pk": "3c58dd7c-ed5b-49f7-b652-7f8be555ba8a",
     "fields": {
       "state": "blocked",
-      "name": "Las Kabacki"
+      "name": "Las Kabacki",
+      "capacity": 10
     }
   },
   {
@@ -217,7 +220,8 @@
     "pk": "40a5656e-f087-4e41-88da-0eba08dd5167",
     "fields": {
       "state": "working",
-      "name": "Uniwersytet"
+      "name": "Uniwersytet",
+      "capacity": 10
     }
   },
   {
@@ -225,7 +229,8 @@
     "pk": "6aeaacbd-c473-4461-894c-504bf6f0045b",
     "fields": {
       "state": "working",
-      "name": "Plac Bankowy"
+      "name": "Plac Bankowy",
+      "capacity": 10
     }
   },
   {
@@ -233,7 +238,8 @@
     "pk": "7440c46c-1516-4c73-a8d8-61516850bf10",
     "fields": {
       "state": "working",
-      "name": "Stadion Narodowy"
+      "name": "Stadion Narodowy",
+      "capacity": 10
     }
   },
   {
@@ -241,7 +247,8 @@
     "pk": "a6147928-0466-40a4-92ef-4f9692b73342",
     "fields": {
       "state": "working",
-      "name": "Metro Młociny"
+      "name": "Metro Młociny",
+      "capacity": 10
     }
   },
   {
@@ -249,7 +256,8 @@
     "pk": "d39d71c1-b436-4993-ba26-a4b732a75abe",
     "fields": {
       "state": "blocked",
-      "name": "Plac Unii Lubelskiej"
+      "name": "Plac Unii Lubelskiej",
+      "capacity": 10
     }
   },
   {
@@ -257,7 +265,8 @@
     "pk": "d52c2874-9c67-4ce5-b8a8-7b6b1bb148e3",
     "fields": {
       "state": "working",
-      "name": "Ratusz Bielany"
+      "name": "Ratusz Bielany",
+      "capacity": 10
     }
   },
   {
@@ -265,7 +274,8 @@
     "pk": "f4086838-76c3-4f0f-9be9-03f344a3c0b0",
     "fields": {
       "state": "working",
-      "name": "Politechnika"
+      "name": "Politechnika",
+      "capacity": 10
     }
   },
   {
@@ -273,7 +283,8 @@
     "pk": "f48cfbfb-1bfd-4694-80f6-94cec109aeb5",
     "fields": {
       "state": "working",
-      "name": "Pole Mokotowskie"
+      "name": "Pole Mokotowskie",
+      "capacity": 10
     }
   }
 ]
