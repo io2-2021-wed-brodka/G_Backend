@@ -46,7 +46,6 @@ class StationViewSet(
     @restrict(UserRole.admin)
     def destroy(self, request, *args, **kwargs):
         station = self.get_object()
-
         if station.bikes.exists():
             return Response(
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,

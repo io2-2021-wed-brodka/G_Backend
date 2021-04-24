@@ -4,7 +4,6 @@ from rest_framework.reverse import reverse
 from bikes.models import Bike, BikeStatus
 from core.testcases import APITestCase
 from stations.models import Station, StationState
-from users.models import User
 
 
 class StationCreateTestCase(APITestCase):
