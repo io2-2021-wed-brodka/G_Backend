@@ -22,6 +22,15 @@ class StationViewSet(
     queryset = Station.objects.all()
     serializer_class = StationSerializer
 
+    def handle_exception(self, exc):
+        if isinstance(exc, Http404):
+            return Response(
+                {"message": "Station not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return super().handle_exception(exc)
+
     @restrict(UserRole.admin)
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
@@ -36,17 +45,12 @@ class StationViewSet(
 
     @restrict(UserRole.admin)
     def destroy(self, request, *args, **kwargs):
-        try:
-            station = self.get_object()
-        except Http404:
-            return Response(
-                status=status.HTTP_404_NOT_FOUND, data={"message": "station not found"}
-            )
+        station = self.get_object()
 
         if station.bikes.exists():
             return Response(
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                data={"message": "station has bikes"},
+                data={"message": "Station has bikes."},
             )
         return super().destroy(request, *args, **kwargs)
 
@@ -57,7 +61,7 @@ class StationViewSet(
             station = Station.objects.get(id=request.data.get("id"))
         except Station.DoesNotExist:
             return Response(
-                {"message": "station not found"}, status=status.HTTP_404_NOT_FOUND
+                {"message": "Station not found."}, status=status.HTTP_404_NOT_FOUND
             )
         if station.state == StationState.working:
             station.block()
@@ -67,7 +71,7 @@ class StationViewSet(
             )
         else:
             return Response(
-                {"message": "station already blocked"},
+                {"message": "Station already blocked."},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
 
@@ -98,17 +102,17 @@ class StationViewSet(
         if station.state == StationState.blocked:
             return Response(
                 {
-                    "message": "Cannot associate specified bike with specified station, station is blocked"
+                    "message": "Cannot associate specified bike with specified station, station is blocked."
                 },
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
-        # TODO(kkrolik): uncomment once capacity of station is introduced
-        # capacity = 10
-        # if Bike.objects.get(station=station.id).count() > capacity:
-        #    return Response(
-        #        status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        #        data={"message": "Cannot associate specified bike with specified station, station is full"},
-        #    )
+        if station.bikes.count() >= station.capacity:
+            return Response(
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                data={
+                    "message": "Cannot associate specified bike with specified station, station is full."
+                },
+            )
         if bike.station is not None:
             return Response(
                 {"message": "Bike associated to another station"},

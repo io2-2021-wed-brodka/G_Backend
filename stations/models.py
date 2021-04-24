@@ -14,6 +14,7 @@ class Station(models.Model):
         max_length=7, choices=StationState.choices, default=StationState.working
     )
     name = models.CharField(max_length=255)
+    capacity = models.PositiveIntegerField(default=10)
 
     def __str__(self):
         return f"Station at {self.name} ({self.state})"
