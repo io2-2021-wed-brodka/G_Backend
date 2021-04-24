@@ -291,4 +291,4 @@ class UserUnblockTestCase(APITestCase):
         response = self.client.delete(
             reverse("users-blocked-detail", kwargs={"pk": user.id})
         )
-        self.assertEqual(response.data, {"message": "Bike not reserved"})
+        self.assertEqual(response.data, {"message": "User not blocked."})
