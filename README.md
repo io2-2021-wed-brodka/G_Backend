@@ -13,8 +13,10 @@ You have to have `python3` installed.
 
 You must create a file called `.env` in top level directory with following contents:
 ```
-SECRET_KEY = <any-gibberish-you-want>
-DEBUG=True # can set to False if used by other team
+# any random string (the one used in production should be kept a secret)
+SECRET_KEY=mysecretkey
+# can be set to False by other teams using the release version
+DEBUG=True
 ```
 
 Then simply run these commands in project directory:
