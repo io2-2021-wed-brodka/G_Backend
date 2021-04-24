@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from core.exceptions import BusinessLogicError
 
 
-def restrict(*roles: list):
+def restrict(*roles):
     """
     Restricts access to an endpoint based on logged in users role.
 
