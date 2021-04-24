@@ -23,6 +23,7 @@ Then simply run these commands in project directory:
 ```
 pip install -r requirements/dev.txt
 python manage.py migrate
+python manage.py loaddata fixtures.json
 python manage.py runserver
 ```
 
