@@ -101,7 +101,7 @@ class UserBlockedViewSet(
     def handle_exception(self, exc):
         if isinstance(exc, Http404):
             return Response(
-                {"message": "Bike not reserved"},
+                {"message": "User not blocked."},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
 
