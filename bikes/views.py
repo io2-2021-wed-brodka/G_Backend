@@ -150,7 +150,7 @@ class ReservationsViewSet(
                 {"message": "Station is blocked."},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
-        reserved_bike.reserve()
+        reserved_bike.reserve(self.request.user)
         return Response(
             data=ReserveBikeSerializer(reserved_bike).data,
             status=status.HTTP_201_CREATED,

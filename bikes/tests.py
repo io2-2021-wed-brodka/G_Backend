@@ -230,7 +230,7 @@ class BikesRentTestCase(APITestCase):
 
 class BikeReservationTestCase(APITestCase):
     def test_create_reservation(self):
-        station = Station.objects.create(name="Station Name create reservation")
+        station = Station.objects.create(name="Station Name")
         reserved_bike = Bike.objects.create(
             station=station, status=BikeStatus.available
         )
@@ -240,9 +240,7 @@ class BikeReservationTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_create_reservation_bike_status(self):
-        station = Station.objects.create(
-            name="Station Name create reservation bike status"
-        )
+        station = Station.objects.create(name="Station Name")
         reserved_bike = Bike.objects.create(
             station=station, status=BikeStatus.available
         )
@@ -251,7 +249,7 @@ class BikeReservationTestCase(APITestCase):
         self.assertEqual(reserved_bike.status, BikeStatus.reserved)
 
     def test_create_reservation_body(self):
-        station = Station.objects.create(name="Station Name create reservation body")
+        station = Station.objects.create(name="Station Name")
         reserved_bike = Bike.objects.create(
             station=station, status=BikeStatus.available
         )
@@ -272,7 +270,17 @@ class BikeReservationTestCase(APITestCase):
             },
         )
 
-    def test_reservation_already_exist(self):
+    def test_create_reservation_reservation_added_to_db(self):
+        station = Station.objects.create(name="Station Name create reservation body")
+        reserved_bike = Bike.objects.create(
+            station=station, status=BikeStatus.available
+        )
+        self.client.post(reverse("bikes-reserved-list"), {"id": reserved_bike.id})
+        reservation = reserved_bike.reservation
+        self.assertIsNotNone(reservation)
+        self.assertEqual(reservation.user, self.user)
+
+    def test_create_reservation_fails_reservation_already_exist(self):
         station = Station.objects.create(name="Station Name reservation already exists")
         reserved_bike = Bike.objects.create(station=station, status=BikeStatus.reserved)
         response = self.client.post(
@@ -280,7 +288,7 @@ class BikeReservationTestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-    def test_reservation_fails_user_blocked_status_code(self):
+    def test_create_reservation_fails_user_blocked_status_code(self):
         self.user.block()
         station = Station.objects.create(name="Station Name reservation already exists")
         reserved_bike = Bike.objects.create(
@@ -291,7 +299,7 @@ class BikeReservationTestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_reservation_fails_user_blocked_body(self):
+    def test_create_reservation_fails_user_blocked_body(self):
         self.user.block()
         station = Station.objects.create(name="Station Name reservation already exists")
         reserved_bike = Bike.objects.create(
@@ -312,6 +320,7 @@ class BikeReservationDeleteTestCase(APITestCase):
         time = timezone.now()
         reservation = Reservation.objects.create(
             bike=reserved_bike,
+            user=self.user,
             reserved_at=time,
             reserved_till=time + timezone.timedelta(minutes=30),
         )
@@ -330,6 +339,7 @@ class BikeReservationDeleteTestCase(APITestCase):
         time = timezone.now()
         reservation = Reservation.objects.create(
             bike=reserved_bike,
+            user=self.user,
             reserved_at=time,
             reserved_till=time + timezone.timedelta(minutes=30),
         )
@@ -347,6 +357,7 @@ class BikeReservationDeleteTestCase(APITestCase):
         time = timezone.now()
         reservation = Reservation.objects.create(
             bike=reserved_bike,
+            user=self.user,
             reserved_at=time,
             reserved_till=time + timezone.timedelta(minutes=30),
         )

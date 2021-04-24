@@ -46,14 +46,14 @@ class Bike(models.Model):
         self.user = None
         self.save()
 
-    def reserve(self):
+    def reserve(self, user):
         time = timezone.now()
         Reservation.objects.create(
             bike=self,
+            user=user,
             reserved_at=time,
             reserved_till=time + timezone.timedelta(minutes=30),
         )
-
         self.status = BikeStatus.reserved
         self.save()
 
@@ -65,10 +65,15 @@ class Bike(models.Model):
 
 class Reservation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    reserved_at = models.DateTimeField()
-    reserved_till = models.DateTimeField()
     bike = models.OneToOneField(
         "bikes.Bike",
         on_delete=models.CASCADE,
         related_name="reservation",
     )
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        related_name="reservations",
+    )
+    reserved_at = models.DateTimeField()
+    reserved_till = models.DateTimeField()
