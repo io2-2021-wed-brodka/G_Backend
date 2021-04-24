@@ -1,0 +1,279 @@
+[
+  {
+    "model": "users.user",
+    "pk": "098c1d8b-a973-4de2-9a68-968d629a1ad5",
+    "fields": {
+      "password": "pbkdf2_sha256$260000$uxUGEi8B5PYQTptrCIfjOa$jcGLnXUQJM3e4gtwBwZBIELv+f0Hzyo8R3fUTdgr8lM=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "jack-black",
+      "first_name": "Jack",
+      "last_name": "Black",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2021-04-24T11:09:55.598Z",
+      "role": "user",
+      "state": "blocked",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": "26620b34-7912-463c-a461-7704a6df4b3e",
+    "fields": {
+      "password": "pbkdf2_sha256$260000$o21YrymLx4yga1syCcrYvh$xJAzOVXGyUQr1kesb2xFJp/RpgDglFNc+buUyWR947k=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "cindy-crawford",
+      "first_name": "Cindy",
+      "last_name": "Crawford",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2021-04-24T11:11:12.171Z",
+      "role": "user",
+      "state": "active",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": "4d9a4968-2df8-40d5-b708-8bbae8ab5360",
+    "fields": {
+      "password": "pbkdf2_sha256$260000$jSSSXmeSzfOFRQTMPJPzpR$Xq6tPOLQVCH9Qs3Ofj8O0KZRIKIhe3cK2A5Ns3r7hGY=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "john-doe",
+      "first_name": "John",
+      "last_name": "Doe",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2021-04-24T11:08:37.402Z",
+      "role": "user",
+      "state": "active",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": "eb882700-2242-469c-9ec1-3fc201419fca",
+    "fields": {
+      "password": "pbkdf2_sha256$260000$1qVFJHT3xVEY1d3roaWPpp$FC9uSMELxFwta2AHbbwaG6jRAlFkAHajIfjvVaG/ifs=",
+      "last_login": null,
+      "is_superuser": true,
+      "username": "admin",
+      "first_name": "Wojtek",
+      "last_name": "Zmyślny",
+      "email": "admin@salty-bikes.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2021-04-22T21:20:50.791Z",
+      "role": "admin",
+      "state": "active",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "bikes.bike",
+    "pk": "03f3ac32-7255-4338-b4f9-3b501b7cfc93",
+    "fields": {
+      "status": "available",
+      "station": "6aeaacbd-c473-4461-894c-504bf6f0045b",
+      "user": null
+    }
+  },
+  {
+    "model": "bikes.bike",
+    "pk": "1ee8e807-d021-43c9-a818-6423d581843b",
+    "fields": {
+      "status": "available",
+      "station": "f4086838-76c3-4f0f-9be9-03f344a3c0b0",
+      "user": null
+    }
+  },
+  {
+    "model": "bikes.bike",
+    "pk": "32d1f916-37c4-4a73-9d55-ee4bb086dc32",
+    "fields": {
+      "status": "available",
+      "station": "d39d71c1-b436-4993-ba26-a4b732a75abe",
+      "user": null
+    }
+  },
+  {
+    "model": "bikes.bike",
+    "pk": "5f69b55a-6233-4940-b867-5ad9cd8576e1",
+    "fields": {
+      "status": "rented",
+      "station": null,
+      "user": "26620b34-7912-463c-a461-7704a6df4b3e"
+    }
+  },
+  {
+    "model": "bikes.bike",
+    "pk": "7df1ddc2-731b-41a0-8506-544fd7e76f21",
+    "fields": {
+      "status": "available",
+      "station": "d39d71c1-b436-4993-ba26-a4b732a75abe",
+      "user": null
+    }
+  },
+  {
+    "model": "bikes.bike",
+    "pk": "a576290f-13f2-484e-849a-bc938627de94",
+    "fields": {
+      "status": "available",
+      "station": "7440c46c-1516-4c73-a8d8-61516850bf10",
+      "user": null
+    }
+  },
+  {
+    "model": "bikes.bike",
+    "pk": "b9b965a5-47ef-4f56-90f7-5748e8082455",
+    "fields": {
+      "status": "available",
+      "station": "a6147928-0466-40a4-92ef-4f9692b73342",
+      "user": null
+    }
+  },
+  {
+    "model": "bikes.bike",
+    "pk": "bcb6ceed-c91f-477a-8dfe-411ae857a511",
+    "fields": {
+      "status": "reserved",
+      "station": "f4086838-76c3-4f0f-9be9-03f344a3c0b0",
+      "user": null
+    }
+  },
+  {
+    "model": "bikes.bike",
+    "pk": "c96f78dd-21f6-4a65-9c8f-c135c5080d67",
+    "fields": {
+      "status": "available",
+      "station": "7440c46c-1516-4c73-a8d8-61516850bf10",
+      "user": null
+    }
+  },
+  {
+    "model": "bikes.bike",
+    "pk": "ed50cca7-726f-4245-820f-99c4f65f7dac",
+    "fields": {
+      "status": "available",
+      "station": "f4086838-76c3-4f0f-9be9-03f344a3c0b0",
+      "user": null
+    }
+  },
+  {
+    "model": "bikes.bike",
+    "pk": "eed26d28-941a-4fbe-8c5a-892388af4e99",
+    "fields": {
+      "status": "available",
+      "station": "40a5656e-f087-4e41-88da-0eba08dd5167",
+      "user": null
+    }
+  },
+  {
+    "model": "bikes.reservation",
+    "pk": "b23ee304-5a54-4078-8965-23b9c4cd5476",
+    "fields": {
+      "bike": "bcb6ceed-c91f-477a-8dfe-411ae857a511",
+      "user": "4d9a4968-2df8-40d5-b708-8bbae8ab5360",
+      "reserved_at": "2021-04-24T11:12:54.329Z",
+      "reserved_till": "2021-04-24T11:42:54.329Z"
+    }
+  },
+  {
+    "model": "stations.station",
+    "pk": "0385dcaa-5424-4046-b707-015334ef4f70",
+    "fields": {
+      "state": "working",
+      "name": "Zoo"
+    }
+  },
+  {
+    "model": "stations.station",
+    "pk": "0948fbdf-7ad2-467a-a7b2-8a2e008833b2",
+    "fields": {
+      "state": "working",
+      "name": "Łazienki"
+    }
+  },
+  {
+    "model": "stations.station",
+    "pk": "3c58dd7c-ed5b-49f7-b652-7f8be555ba8a",
+    "fields": {
+      "state": "blocked",
+      "name": "Las Kabacki"
+    }
+  },
+  {
+    "model": "stations.station",
+    "pk": "40a5656e-f087-4e41-88da-0eba08dd5167",
+    "fields": {
+      "state": "working",
+      "name": "Uniwersytet"
+    }
+  },
+  {
+    "model": "stations.station",
+    "pk": "6aeaacbd-c473-4461-894c-504bf6f0045b",
+    "fields": {
+      "state": "working",
+      "name": "Plac Bankowy"
+    }
+  },
+  {
+    "model": "stations.station",
+    "pk": "7440c46c-1516-4c73-a8d8-61516850bf10",
+    "fields": {
+      "state": "working",
+      "name": "Stadion Narodowy"
+    }
+  },
+  {
+    "model": "stations.station",
+    "pk": "a6147928-0466-40a4-92ef-4f9692b73342",
+    "fields": {
+      "state": "working",
+      "name": "Metro Młociny"
+    }
+  },
+  {
+    "model": "stations.station",
+    "pk": "d39d71c1-b436-4993-ba26-a4b732a75abe",
+    "fields": {
+      "state": "blocked",
+      "name": "Plac Unii Lubelskiej"
+    }
+  },
+  {
+    "model": "stations.station",
+    "pk": "d52c2874-9c67-4ce5-b8a8-7b6b1bb148e3",
+    "fields": {
+      "state": "working",
+      "name": "Ratusz Bielany"
+    }
+  },
+  {
+    "model": "stations.station",
+    "pk": "f4086838-76c3-4f0f-9be9-03f344a3c0b0",
+    "fields": {
+      "state": "working",
+      "name": "Politechnika"
+    }
+  },
+  {
+    "model": "stations.station",
+    "pk": "f48cfbfb-1bfd-4694-80f6-94cec109aeb5",
+    "fields": {
+      "state": "working",
+      "name": "Pole Mokotowskie"
+    }
+  }
+]

@@ -23,12 +23,12 @@ Then simply run these commands in project directory:
 ```
 pip install -r requirements/dev.txt
 python manage.py migrate
+python manage.py loaddata fixtures.json
 python manage.py runserver
 ```
+Running `loaddata` creates some mock data and most importantly an admin user with username `admin` and password `admin`.
 
-then go to http://127.0.0.1:8000/stations/ and http://127.0.0.1:8000/bikes/.
-
-Alternatively, you can run the server in a docker container.   
+Alternatively, you can run the setup as a docker container.   
 Assuming you have docker installed (verify with `docker -v`)
 
 ```
