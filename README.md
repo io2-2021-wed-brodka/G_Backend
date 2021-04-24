@@ -26,8 +26,9 @@ python manage.py migrate
 python manage.py loaddata fixtures.json
 python manage.py runserver
 ```
+Running `loaddata` creates some mock data and most importantly an admin user with username `admin` and password `admin`.
 
-Alternatively, you can run the server in a docker container.   
+Alternatively, you can run the setup as a docker container.   
 Assuming you have docker installed (verify with `docker -v`)
 
 ```
