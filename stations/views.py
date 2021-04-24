@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from bikes.models import Bike
+from bikes.models import Bike, BikeStatus
 from bikes.serializers import ReadBikeSerializer
 from core.decorators import restrict
 from stations.models import Station, StationState
@@ -71,9 +71,23 @@ class StationViewSet(
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
 
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=["get", "post"])
     @restrict(UserRole.admin, UserRole.tech, UserRole.user)
     def bikes(self, request, *args, **kwargs):
+        if request.method == "GET":
+            return self.list_bikes_at_station(request, *args, **kwargs)
+        else:
+            return self.return_bike_to_station(request, *args, **kwargs)
+
+    def list_bikes_at_station(self, request, *args, **kwargs):
+        station = self.get_object()
+        bikes = station.bikes.filter(status=BikeStatus.available)
+        return Response(
+            status=status.HTTP_200_OK,
+            data=ReadBikeSerializer(bikes, many=True).data,
+        )
+
+    def return_bike_to_station(self, request, *args, **kwargs):
         try:
             bike = Bike.objects.get(id=request.data.get("id"))
         except Bike.DoesNotExist:
@@ -106,8 +120,3 @@ class StationViewSet(
             data=ReadBikeSerializer(bike).data,
             status=status.HTTP_201_CREATED,
         )
-
-    @action(detail=True, methods=["get"], url_path="bikes")
-    @restrict(UserRole.admin, UserRole.tech, UserRole.user)
-    def bikes_list(self, request, *args, **kwargs):
-        pass

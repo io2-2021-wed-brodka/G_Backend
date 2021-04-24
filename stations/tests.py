@@ -236,3 +236,44 @@ class StationReturnBikeTestCase(APITestCase):
             {"id": f"{returned_bike.id}"},
         )
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+
+class ListBikesAtStationTestCase(APITestCase):
+    def test_list_bikes_at_station_status_code(self):
+        response = self.client.get(reverse("station-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_list_bikes_at_station_body(self):
+        station1 = Station.objects.create(name="Station Name 1")
+        station2 = Station.objects.create(name="Station Name 2")
+        Bike.objects.create(status=BikeStatus.rented, user=self.user)
+        bike1 = Bike.objects.create(station=station1)
+        bike2 = Bike.objects.create(station=station1)
+        Bike.objects.create(station=station2)
+        Bike.objects.create(status=BikeStatus.reserved, station=station2)
+        response = self.client.get(reverse("station-bikes", kwargs={"pk": station1.id}))
+        self.assertListEqual(
+            response.data,
+            [
+                {
+                    "id": str(bike1.id),
+                    "station": {
+                        "id": str(bike1.station.id),
+                        "name": bike1.station.name,
+                        "activeBikesCount": bike1.station.bikes.count(),
+                    },
+                    "user": None,
+                    "status": bike1.status,
+                },
+                {
+                    "id": str(bike2.id),
+                    "station": {
+                        "id": str(bike2.station.id),
+                        "name": bike2.station.name,
+                        "activeBikesCount": bike2.station.bikes.count(),
+                    },
+                    "user": None,
+                    "status": bike2.status,
+                },
+            ],
+        )
