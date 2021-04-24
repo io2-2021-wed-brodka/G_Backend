@@ -62,7 +62,7 @@ class StationViewSet(
         if station.state == StationState.working:
             station.block()
             return Response(
-                {"id": f"{station.id}", "name": f"{station.name}"},
+                {"id": str(station.id), "name": station.name},
                 status=status.HTTP_201_CREATED,
             )
         else:
@@ -73,7 +73,7 @@ class StationViewSet(
 
     @action(detail=True, methods=["post"])
     @restrict(UserRole.admin, UserRole.tech, UserRole.user)
-    def bikes(self, request, *args, **kwargs):  # return bikes
+    def bikes(self, request, *args, **kwargs):
         try:
             bike = Bike.objects.get(id=request.data.get("id"))
         except Bike.DoesNotExist:
@@ -106,3 +106,8 @@ class StationViewSet(
             data=ReadBikeSerializer(bike).data,
             status=status.HTTP_201_CREATED,
         )
+
+    @action(detail=True, methods=["get"], url_path="bikes")
+    @restrict(UserRole.admin, UserRole.tech, UserRole.user)
+    def bikes_list(self, request, *args, **kwargs):
+        pass
