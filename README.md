@@ -55,4 +55,11 @@ It is recommended to add such code to your `.git/hooks/pre-commit` file:
 black . --check
 flakehell lint .
 ```
+Remember to run `chmod +x .git/hooks/pre-commit` or equivalent.
 It won't let you commit code with bad style and save you a push to branch that will fail at linter checks.
+
+Additionally, add this to `/git/hooks/pre-push`:
+```
+python manage.py test
+```
+Remember to run `chmod +x .git/hooks/pre-push` or equivalent.
