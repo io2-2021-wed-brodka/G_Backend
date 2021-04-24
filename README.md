@@ -27,8 +27,6 @@ python manage.py loaddata fixtures.json
 python manage.py runserver
 ```
 
-then go to http://127.0.0.1:8000/stations/ and http://127.0.0.1:8000/bikes/.
-
 Alternatively, you can run the server in a docker container.   
 Assuming you have docker installed (verify with `docker -v`)
 
