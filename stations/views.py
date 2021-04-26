@@ -106,7 +106,7 @@ class StationViewSet(
 
     def return_bike_to_station(self, request, *args, **kwargs):
         """
-        Rent out a bike.
+        Return rented bike to station.
         Bike id is provided in body.
 
         Conditions:
