@@ -27,7 +27,7 @@ def restrict(*roles):
             if request.user.role not in roles:
                 return Response(
                     status=status.HTTP_403_FORBIDDEN,
-                    data={"message": "Unauthorized"},
+                    data={"message": "Unauthorized."},
                 )
             return func(view, request, *args, **kwargs)
 

@@ -191,11 +191,17 @@ class BikesRentTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
     def test_rent_bike_already_reserved(self):
+        user = User.objects.create(first_name="John", last_name="Doe")
         station = Station.objects.create(name="Station Name")
-        rented_bike = Bike.objects.create(station=station, status=BikeStatus.reserved)
-        response = self.client.post(
-            reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
+        bike = Bike.objects.create(station=station, status=BikeStatus.reserved)
+        time = timezone.now()
+        Reservation.objects.create(
+            bike=bike,
+            user=user,
+            reserved_at=time,
+            reserved_till=time + timezone.timedelta(minutes=30),
         )
+        response = self.client.post(reverse("bikes-rented-list"), {"id": f"{bike.id}"})
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
     def test_rent_bike_station_blocked(self):
@@ -381,3 +387,25 @@ class BikeReservationDeleteTestCase(APITestCase):
             reverse("bikes-reserved-detail", kwargs={"pk": str(reserved_bike.id)})
         )
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    def test_delete_reservation_fails_user_cancelling_reservation_is_different(self):
+        user = User.objects.create(first_name="John", last_name="Doe")
+        station = Station.objects.create(name="Station Name delete reservation body")
+        reserved_bike = Bike.objects.create(station=station, status=BikeStatus.reserved)
+        time = timezone.now()
+        Reservation.objects.create(
+            bike=reserved_bike,
+            user=user,
+            reserved_at=time,
+            reserved_till=time + timezone.timedelta(minutes=30),
+        )
+        response = self.client.delete(
+            reverse("bikes-reserved-detail", kwargs={"pk": str(reserved_bike.id)})
+        )
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertEqual(
+            response.data,
+            {
+                "message": "User cancelling the reservation is not the user that reserved it."
+            },
+        )

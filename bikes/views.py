@@ -1,4 +1,3 @@
-from django.http import Http404
 from rest_framework import viewsets, status, mixins
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.response import Response
@@ -11,10 +10,9 @@ from bikes.serializers import (
     CreateBikeSerializer,
     RentBikeSerializer,
     ReserveBikeSerializer,
-    ReserveIdSerializer,
 )
 from core.decorators import restrict
-from stations.models import Station, StationState
+from stations.models import StationState
 from users.models import UserRole, UserState
 
 
@@ -64,37 +62,56 @@ class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewS
 
     @restrict(UserRole.user, UserRole.tech, UserRole.admin)
     def create(self, request, *args, **kwargs):
+        """
+        Rent out a bike.
+        Bike id is provided in body.
+
+        Conditions:
+        - User can't be blocked
+        - Bike with given id must exist
+        - Station where the bike is can't be blocked
+        - Bike can't be currently blocked by tech
+        - Bike can't be already rented
+        - Bike can only be reserved, if reserved by the calling user
+        """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            bike = Bike.objects.get(id=request.data.get("id"))
-        except Bike.DoesNotExist:
-            return Response(
-                {"message": "Bike not found."}, status=status.HTTP_404_NOT_FOUND
-            )
         if request.user.state == UserState.blocked:
             return Response(
                 {"message": "Blocked users are not allowed to rent bikes."},
                 status=status.HTTP_403_FORBIDDEN,
             )
         try:
-            Station.objects.get(id=bike.station.id, state=StationState.blocked)
-        except Station.DoesNotExist:
-            if not bike.status == BikeStatus.available:
-                return Response(
-                    {
-                        "message": "Bike is not available, it is rented, blocked or reserved"
-                    },
-                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                )
-            bike.rent(self.request.user)
+            bike = Bike.objects.get(id=request.data.get("id"))
+        except Bike.DoesNotExist:
             return Response(
-                data=ReadBikeSerializer(bike).data,
-                status=status.HTTP_201_CREATED,
+                {"message": "Bike not found."}, status=status.HTTP_404_NOT_FOUND
             )
+        if bike.station.state == StationState.blocked:
+            return Response(
+                {"message": "Cannot rent a bike from blocked station."},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        if bike.status == BikeStatus.blocked:
+            return Response(
+                {"message": "Bike is currently blocked."},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        if bike.status == BikeStatus.rented:
+            return Response(
+                {"message": "Bike is currently reserved."},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        if bike.status == BikeStatus.reserved and bike.reservation.user != request.user:
+            return Response(
+                {"message": "Bike is currently reserved by different user."},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+
+        bike.rent(self.request.user)
         return Response(
-            {"message": "Bike is not available, it is rented, blocked or reserved"},
-            status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            data=ReadBikeSerializer(bike).data,
+            status=status.HTTP_201_CREATED,
         )
 
     @restrict(UserRole.user, UserRole.tech, UserRole.admin)
@@ -107,52 +124,50 @@ class ReservationsViewSet(
     mixins.DestroyModelMixin,
     GenericViewSet,
 ):
+    serializer_class = ReserveBikeSerializer
+
     def get_queryset(self):
         return Bike.objects.filter(reservation__user=self.request.user)
 
-    def get_serializer_class(self):
-        if self.action == "create":
-            return ReserveIdSerializer
-        else:
-            return ReserveBikeSerializer
-
-    def handle_exception(self, exc):
-        if isinstance(exc, Http404):
-            return Response(
-                {"message": "Bike not reserved"},
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            )
-
-        return super().handle_exception(exc)
-
     @restrict(UserRole.user, UserRole.tech, UserRole.admin)
     def create(self, request, *args, **kwargs):
+        """
+        Reserve a bike.
+        Bike id is provided in body.
+
+        Conditions:
+        - User can't be blocked
+        - Bike with given id must exist
+        - Bike can't be currently be blocked
+        - Bike can't be currently be rented
+        - Bike can't be already reserved
+        - Station where the bike is can't be blocked
+        """
         if request.user.state == UserState.blocked:
             return Response(
                 {"message": "Blocked users are not allowed to rent bikes."},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
         try:
-            reserved_bike = Bike.objects.get(id=request.data.get("id"))
+            bike = Bike.objects.get(id=request.data.get("id"))
         except Bike.DoesNotExist:
             return Response(
                 {"message": "Bike not found"}, status=status.HTTP_404_NOT_FOUND
             )
-        if reserved_bike.status != BikeStatus.available:
+        if bike.status != BikeStatus.available:
             return Response(
                 {"message": "Bike already blocked, rented or reserved."},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
-        if reserved_bike.station.state == StationState.blocked:
+        if bike.station.state == StationState.blocked:
             return Response(
                 {"message": "Station is blocked."},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
-        reserved_bike.reserve(self.request.user)
+
+        bike.reserve(self.request.user)
         return Response(
-            data=ReserveBikeSerializer(reserved_bike).data,
+            data=ReserveBikeSerializer(bike).data,
             status=status.HTTP_201_CREATED,
         )
 
@@ -162,12 +177,34 @@ class ReservationsViewSet(
 
     @restrict(UserRole.user, UserRole.tech, UserRole.admin)
     def destroy(self, request, *args, **kwargs):
-        reserved_bike = self.get_object()
+        """
+        Cancel bike reservation.
+
+        Conditions:
+        - Bike with given id must exist
+        - Bike must be currently reserved
+        - User cancelling reservation must be the one that reserved the bike
+        """
+        try:
+            reserved_bike = Bike.objects.get(id=kwargs["pk"])
+        except Bike.DoesNotExist:
+            return Response(
+                {"message": "Bike does not exist"},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
         if reserved_bike.status != BikeStatus.reserved:
             return Response(
                 {"message": "Bike not reserved"},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
+        if reserved_bike.reservation.user != self.request.user:
+            return Response(
+                {
+                    "message": "User cancelling the reservation is not the user that reserved it."
+                },
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+
         reserved_bike.cancel_reservation()
         return Response(
             status=status.HTTP_204_NO_CONTENT,

@@ -45,6 +45,12 @@ class StationViewSet(
 
     @restrict(UserRole.admin)
     def destroy(self, request, *args, **kwargs):
+        """
+        Delete a station.
+
+        Conditions:
+        - Station can't contain bikes
+        """
         station = self.get_object()
         if station.bikes.exists():
             return Response(
@@ -56,23 +62,31 @@ class StationViewSet(
     @action(detail=False, methods=["post"])
     @restrict(UserRole.admin)
     def blocked(self, request, *args, **kwargs):
+        """
+        Block a station.
+        Station id is provided in body.
+
+        Conditions:
+        - Station must exist
+        - Station must be currently working
+        """
         try:
             station = Station.objects.get(id=request.data.get("id"))
         except Station.DoesNotExist:
             return Response(
                 {"message": "Station not found."}, status=status.HTTP_404_NOT_FOUND
             )
-        if station.state == StationState.working:
-            station.block()
-            return Response(
-                {"id": str(station.id), "name": station.name},
-                status=status.HTTP_201_CREATED,
-            )
-        else:
+        if station.state != StationState.working:
             return Response(
                 {"message": "Station already blocked."},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
+
+        station.block()
+        return Response(
+            {"id": str(station.id), "name": station.name},
+            status=status.HTTP_201_CREATED,
+        )
 
     @action(detail=True, methods=["get", "post"])
     @restrict(UserRole.admin, UserRole.tech, UserRole.user)
@@ -91,11 +105,32 @@ class StationViewSet(
         )
 
     def return_bike_to_station(self, request, *args, **kwargs):
+        """
+        Rent out a bike.
+        Bike id is provided in body.
+
+        Conditions:
+        - Bike with given id must exist
+        - Bike must be rented
+        - User returning the bike must be the user that rented the bike
+        - Station can't be blocked
+        - Station can't be over capacity
+        """
         try:
             bike = Bike.objects.get(id=request.data.get("id"))
         except Bike.DoesNotExist:
             return Response(
                 {"message": "Bike not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        if bike.status != BikeStatus.rented or bike.station is not None:
+            return Response(
+                {"message": "Bike not rented."},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        if request.user != bike.user:
+            return Response(
+                {"message": "User returning the bike is not the user that rented it."},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
         station = self.get_object()
         if station.state == StationState.blocked:
@@ -111,11 +146,6 @@ class StationViewSet(
                 data={
                     "message": "Cannot associate specified bike with specified station, station is full."
                 },
-            )
-        if bike.station is not None:
-            return Response(
-                {"message": "Bike associated to another station"},
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
         bike.return_to_station(station)
 

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework.fields import SerializerMethodField, CharField
+from rest_framework.fields import SerializerMethodField
 
 from bikes.models import Bike
 from stations.models import Station
@@ -47,7 +47,3 @@ class ReserveBikeSerializer(serializers.ModelSerializer):
 
     def get_reservedTill(self, bike):
         return bike.reservation.reserved_till
-
-
-class ReserveIdSerializer(serializers.Serializer):
-    id = CharField()
