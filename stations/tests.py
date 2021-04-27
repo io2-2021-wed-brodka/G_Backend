@@ -4,6 +4,7 @@ from rest_framework.reverse import reverse
 from bikes.models import Bike, BikeStatus
 from core.testcases import APITestCase
 from stations.models import Station, StationState
+from users.models import User
 
 
 class StationCreateTestCase(APITestCase):
@@ -246,6 +247,24 @@ class StationReturnBikeTestCase(APITestCase):
             {
                 "message": "Cannot associate specified bike with specified station, station is full."
             },
+        )
+
+    def test_return_bike_fails_user_returning_is_different(self):
+        user = User.objects.create(first_name="John", last_name="Doe")
+        station = Station.objects.create(
+            name="Station Name", state=StationState.working
+        )
+        returned_bike = Bike.objects.create(
+            user=user, station=None, status=BikeStatus.rented
+        )
+        response = self.client.post(
+            reverse("station-bikes", kwargs={"pk": station.id}),
+            {"id": f"{returned_bike.id}"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertDictEqual(
+            response.data,
+            {"message": "User returning the bike is not the user that rented it."},
         )
 
 

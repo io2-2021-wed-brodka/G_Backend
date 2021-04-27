@@ -72,6 +72,7 @@ class LoginAPIView(APIView):
 
 
 class LogoutAPIView(APIView):
+    @restrict(UserRole.user, UserRole.tech, UserRole.admin)
     def post(self, request, *args, **kwargs):
         Token.objects.get(user=request.user).delete()
         return Response(
