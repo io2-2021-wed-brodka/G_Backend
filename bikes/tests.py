@@ -204,7 +204,7 @@ class BikesRentTestCase(APITestCase):
         response = self.client.post(reverse("bikes-rented-list"), {"id": f"{bike.id}"})
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-    def test_rent_bike_station_blocked(self):
+    def test_rent_bike_fails_station_blocked(self):
         station = Station.objects.create(
             name="Station Name", state=StationState.blocked
         )
@@ -229,8 +229,36 @@ class BikesRentTestCase(APITestCase):
         )
         rented_bike = Bike.objects.create(station=station, status=BikeStatus.available)
         self.client.post(reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"})
-        new_bike = Bike.objects.get(id=rented_bike.id)
-        self.assertEqual(new_bike.station, None)
+        rented_bike.refresh_from_db()
+        self.assertEqual(rented_bike.station, None)
+
+    def test_rent_bike_that_was_rented(self):
+        station = Station.objects.create(
+            name="Station Name already rented x", state=StationState.working
+        )
+        reserved_bike = Bike.objects.create(station=station)
+        reserved_bike.reserve(self.user)
+        response = self.client.post(
+            reverse("bikes-rented-list"), {"id": f"{reserved_bike.id}"}
+        )
+        reserved_bike.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(reserved_bike.station, None)
+        self.assertEqual(reserved_bike.user, self.user)
+        self.assertFalse(hasattr(reserved_bike, "reservation"))
+
+    def test_rent_bike_fails_user_over_rental_limit(self):
+        self.user.rental_limit = 0
+        self.user.save()
+        station = Station.objects.create(
+            name="Station Name already rented x", state=StationState.working
+        )
+        rented_bike = Bike.objects.create(station=station, status=BikeStatus.available)
+        response = self.client.post(
+            reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"}
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, {"message": "User reached rental limit of 0."})
 
 
 class BikeReservationTestCase(APITestCase):

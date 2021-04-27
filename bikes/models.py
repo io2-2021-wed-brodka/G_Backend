@@ -3,6 +3,8 @@ import uuid
 from django.db import models
 from django.utils import timezone
 
+from core.exceptions import BusinessLogicError
+
 
 class BikeStatus(models.TextChoices):
     available = "available"
@@ -35,6 +37,14 @@ class Bike(models.Model):
         return f"Bike {self.id} ({self.status}), at station {self.station.name}"
 
     def rent(self, user):
+        # the fact we have to use hasattr is a shameful stain on Django's reputation
+        # source: https://stackoverflow.com/a/40743258/8888856
+        if hasattr(self, "reservation"):
+            if self.reservation.user != user:
+                raise BusinessLogicError(
+                    "User renting the bike is not the one that reserved the bike"
+                )
+            self.reservation.delete()
         self.user = user
         self.status = BikeStatus.rented
         self.station = None

@@ -68,6 +68,7 @@ class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewS
 
         Conditions:
         - User can't be blocked
+        - User can't be over renting limit
         - Bike with given id must exist
         - Station where the bike is can't be blocked
         - Bike can't be currently blocked by tech
@@ -79,6 +80,13 @@ class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewS
         if request.user.state == UserState.blocked:
             return Response(
                 {"message": "Blocked users are not allowed to rent bikes."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if request.user.bikes.count() >= request.user.rental_limit:
+            return Response(
+                {
+                    "message": f"User reached rental limit of {request.user.rental_limit}."
+                },
                 status=status.HTTP_403_FORBIDDEN,
             )
         try:
