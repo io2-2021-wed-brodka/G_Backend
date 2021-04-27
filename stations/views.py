@@ -59,6 +59,15 @@ class StationViewSet(
             )
         return super().destroy(request, *args, **kwargs)
 
+    @action(detail=False, methods=["get"])
+    @restrict(UserRole.user, UserRole.tech, UserRole.admin)
+    def active(self, request, *args, **kwargs):
+        stations = Station.objects.filter(state=StationState.working)
+        return Response(
+            status=status.HTTP_200_OK,
+            data=StationSerializer(stations, many=True).data,
+        )
+
     @action(detail=False, methods=["post"])
     @restrict(UserRole.admin)
     def blocked(self, request, *args, **kwargs):
