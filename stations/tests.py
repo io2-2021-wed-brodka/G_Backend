@@ -48,7 +48,7 @@ class StationGetTestCase(APITestCase):
         )
 
 
-class StationsGetTestCase(APITestCase):
+class StationListGetTestCase(APITestCase):
     def test_get_stations_status_code(self):
         response = self.client.get(reverse("station-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -304,6 +304,33 @@ class ListBikesAtStationTestCase(APITestCase):
                     },
                     "user": None,
                     "status": bike2.status,
+                },
+            ],
+        )
+
+
+class ActiveStationListGetTestCase(APITestCase):
+    def test_get_active_stations_status_code(self):
+        response = self.client.get(reverse("station-active"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_stations_body(self):
+        station1 = Station.objects.create(name="Good 'ol station 1")
+        station2 = Station.objects.create(name="Good 'ol station 2")
+        Station.objects.create(name="Good 'ol station 3", state=StationState.blocked)
+        response = self.client.get(reverse("station-active"))
+        self.assertListEqual(
+            response.data,
+            [
+                {
+                    "id": str(station1.id),
+                    "name": station1.name,
+                    "activeBikesCount": station1.bikes.count(),
+                },
+                {
+                    "id": str(station2.id),
+                    "name": station2.name,
+                    "activeBikesCount": station2.bikes.count(),
                 },
             ],
         )
