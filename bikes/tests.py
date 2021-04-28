@@ -22,9 +22,9 @@ class BikesGetTestCase(APITestCase):
         bike2 = Bike.objects.create(station=station1)
         bike3 = Bike.objects.create(status=BikeStatus.reserved, station=station2)
         response = self.client.get(reverse("bike-list"))
-        self.assertListEqual(
+        self.assertDictEqual(
             response.data,
-            [
+            {"bikes": [
                 {
                     "id": str(bike1.id),
                     "station": None,
@@ -51,7 +51,7 @@ class BikesGetTestCase(APITestCase):
                     "user": None,
                     "status": bike3.status,
                 },
-            ],
+            ],}
         )
 
 
@@ -113,9 +113,9 @@ class BikesGetRentedTestCase(APITestCase):
         )
         Bike.objects.create(station=station, status=BikeStatus.available)
         response = self.client.get(reverse("bikes-rented-list"))
-        self.assertEqual(
+        self.assertDictEqual(
             response.data,
-            [
+            {"bikes": [
                 {
                     "id": str(bike1.id),
                     "station": {
@@ -136,7 +136,7 @@ class BikesGetRentedTestCase(APITestCase):
                     "user": {"id": str(self.user.id), "name": self.user.name},
                     "status": bike2.status,
                 },
-            ],
+            ],}
         )
 
 
