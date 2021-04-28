@@ -23,6 +23,7 @@ class User(AbstractUser):
     state = models.CharField(
         max_length=7, choices=UserState.choices, default=UserState.active
     )
+    rental_limit = models.PositiveSmallIntegerField(default=4)
 
     def __str__(self):
         return f"{self.name} ({self.role}, {self.state})"
