@@ -4,6 +4,8 @@ from django.db import models
 from django.utils import timezone
 
 from core.exceptions import BusinessLogicError
+from stations.models import Station
+from users.models import User
 
 
 class BikeStatus(models.TextChoices):
@@ -50,13 +52,13 @@ class Bike(models.Model):
         self.station = None
         self.save()
 
-    def return_to_station(self, station):
+    def return_to_station(self, station: Station):
         self.station = station
         self.status = BikeStatus.available
         self.user = None
         self.save()
 
-    def reserve(self, user):
+    def reserve(self, user: User):
         time = timezone.now()
         Reservation.objects.create(
             bike=self,
