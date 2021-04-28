@@ -177,15 +177,15 @@ class UserListTestCase(APITestCase):
                         # we create one admin account for authentication,
                         # we need to consider him here
                         "id": str(self.user.id),
-                        "name": str(self.user.name),
+                        "name": str(self.user.username),
                     },
                     {
                         "id": str(user1.id),
-                        "name": str(user1.name),
+                        "name": str(user1.username),
                     },
                     {
                         "id": str(user2.id),
-                        "name": str(user2.name),
+                        "name": str(user2.username),
                     },
                 ],
             },
@@ -213,11 +213,11 @@ class UserBlockedListTestCase(APITestCase):
                 "users": [
                     {
                         "id": str(user1.id),
-                        "name": str(user1.name),
+                        "name": str(user1.username),
                     },
                     {
                         "id": str(user2.id),
-                        "name": str(user2.name),
+                        "name": str(user2.username),
                     },
                 ],
             },
@@ -237,7 +237,7 @@ class UserBlockTestCase(APITestCase):
             response.data,
             {
                 "id": str(user.id),
-                "name": str(user.name),
+                "name": str(user.username),
             },
         )
 
