@@ -36,6 +36,7 @@ class BikesGetTestCase(APITestCase):
                         "station": {
                             "id": str(bike2.station.id),
                             "name": bike2.station.name,
+                            "state": bike2.station.state,
                             "activeBikesCount": bike2.station.bikes.count(),
                         },
                         "user": None,
@@ -46,6 +47,7 @@ class BikesGetTestCase(APITestCase):
                         "station": {
                             "id": str(bike3.station.id),
                             "name": bike3.station.name,
+                            "state": bike3.station.state,
                             "activeBikesCount": bike3.station.bikes.count(),
                         },
                         "user": None,
@@ -73,6 +75,7 @@ class BikeCreateTestCase(APITestCase):
                 "station": {
                     "id": str(station.id),
                     "name": station.name,
+                    "state": station.state,
                     "activeBikesCount": station.bikes.count(),
                 },
                 "user": None,
@@ -123,6 +126,7 @@ class BikesGetRentedTestCase(APITestCase):
                         "station": {
                             "id": str(bike1.station.id),
                             "name": bike1.station.name,
+                            "state": bike1.station.state,
                             "activeBikesCount": bike1.station.bikes.count(),
                         },
                         "user": {"id": str(self.user.id), "name": self.user.username},
@@ -133,6 +137,7 @@ class BikesGetRentedTestCase(APITestCase):
                         "station": {
                             "id": str(bike2.station.id),
                             "name": bike2.station.name,
+                            "state": bike2.station.state,
                             "activeBikesCount": bike2.station.bikes.count(),
                         },
                         "user": {"id": str(self.user.id), "name": self.user.username},
@@ -291,6 +296,7 @@ class BikesGetReservedTestCase(APITestCase):
                         "station": {
                             "id": str(bike1.station.id),
                             "name": bike1.station.name,
+                            "state": bike1.station.state,
                             "activeBikesCount": bike1.station.bikes.count(),
                         },
                         "reservedAt": bike1.reservation.reserved_at,
@@ -301,6 +307,7 @@ class BikesGetReservedTestCase(APITestCase):
                         "station": {
                             "id": str(bike2.station.id),
                             "name": bike2.station.name,
+                            "state": bike2.station.state,
                             "activeBikesCount": bike2.station.bikes.count(),
                         },
                         "reservedAt": bike2.reservation.reserved_at,
@@ -346,6 +353,7 @@ class BikeMakeReservationTestCase(APITestCase):
                 "station": {
                     "id": str(reserved_bike.station.id),
                     "name": reserved_bike.station.name,
+                    "state": reserved_bike.station.state,
                     "activeBikesCount": reserved_bike.station.bikes.count(),
                 },
                 "reservedAt": reserved_bike.reservation.reserved_at,

@@ -24,6 +24,7 @@ class StationCreateTestCase(APITestCase):
             {
                 "id": str(station.id),
                 "name": station.name,
+                "state": station.state,
                 "activeBikesCount": station.bikes.count(),
             },
         )
@@ -43,6 +44,7 @@ class StationGetTestCase(APITestCase):
             {
                 "id": str(station.id),
                 "name": station.name,
+                "state": station.state,
                 "activeBikesCount": station.bikes.count(),
             },
         )
@@ -67,16 +69,19 @@ class StationListGetTestCase(APITestCase):
                     {
                         "id": str(station1.id),
                         "name": station1.name,
+                        "state": station1.state,
                         "activeBikesCount": station1.bikes.count(),
                     },
                     {
                         "id": str(station2.id),
                         "name": station2.name,
+                        "state": station2.state,
                         "activeBikesCount": station2.bikes.count(),
                     },
                     {
                         "id": str(station3.id),
                         "name": station3.name,
+                        "state": station3.state,
                         "activeBikesCount": station3.bikes.count(),
                     },
                 ],
@@ -187,6 +192,7 @@ class StationReturnBikeTestCase(APITestCase):
                 "station": {
                     "id": str(station.id),
                     "name": station.name,
+                    "state": station.state,
                     "activeBikesCount": station.bikes.count(),
                 },
                 "user": None,
@@ -293,6 +299,7 @@ class ListBikesAtStationTestCase(APITestCase):
                         "station": {
                             "id": str(bike1.station.id),
                             "name": bike1.station.name,
+                            "state": bike1.station.state,
                             "activeBikesCount": bike1.station.bikes.count(),
                         },
                         "user": None,
@@ -303,6 +310,7 @@ class ListBikesAtStationTestCase(APITestCase):
                         "station": {
                             "id": str(bike2.station.id),
                             "name": bike2.station.name,
+                            "state": bike2.station.state,
                             "activeBikesCount": bike2.station.bikes.count(),
                         },
                         "user": None,
@@ -330,11 +338,13 @@ class ActiveStationListGetTestCase(APITestCase):
                     {
                         "id": str(station1.id),
                         "name": station1.name,
+                        "state": station1.state,
                         "activeBikesCount": station1.bikes.count(),
                     },
                     {
                         "id": str(station2.id),
                         "name": station2.name,
+                        "state": station2.state,
                         "activeBikesCount": station2.bikes.count(),
                     },
                 ],
