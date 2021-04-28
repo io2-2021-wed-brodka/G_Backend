@@ -1,0 +1,104 @@
+[
+  {
+    "model": "users.user",
+    "pk": "86969df5-19bd-449b-a690-56281fc32bda",
+    "fields": {
+      "password": "pbkdf2_sha256$260000$3hzxNU6n679K0Rpa92gdqu$n8G76Yp4fXvjgBFscwJv2VJ4S5bI7Q179hzRszWUBe4=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "admin",
+      "first_name": "Wojtek",
+      "last_name": "Zmyślny",
+      "email": "admin@admin.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2021-04-28T10:43:04.223Z",
+      "role": "admin",
+      "state": "active",
+      "rental_limit": 4,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "bikes.bike",
+    "pk": "02354011-3e31-4ffb-ae48-4374408db6fe",
+    "fields": {
+      "status": "available",
+      "station": "75fe1827-2a53-4b89-86dc-e6f99c27cd57",
+      "user": null
+    }
+  },
+  {
+    "model": "bikes.bike",
+    "pk": "38b005e3-d4b6-446f-9c1c-a6870cd5cdec",
+    "fields": {
+      "status": "available",
+      "station": "1e95b195-a0df-4842-871c-9bd6149e0a85",
+      "user": null
+    }
+  },
+  {
+    "model": "bikes.bike",
+    "pk": "5cddb1e1-5ffd-425e-bb99-058652ec2328",
+    "fields": {
+      "status": "available",
+      "station": "75fe1827-2a53-4b89-86dc-e6f99c27cd57",
+      "user": null
+    }
+  },
+  {
+    "model": "bikes.bike",
+    "pk": "5f67dd94-c20b-4a29-888e-8368998c11fe",
+    "fields": {
+      "status": "available",
+      "station": "1e95b195-a0df-4842-871c-9bd6149e0a85",
+      "user": null
+    }
+  },
+  {
+    "model": "bikes.bike",
+    "pk": "d4eb96c4-6805-4289-964c-4cff764a6634",
+    "fields": {
+      "status": "available",
+      "station": "69fcc65c-b9ce-4578-92a5-4093ae8f2961",
+      "user": null
+    }
+  },
+  {
+    "model": "bikes.bike",
+    "pk": "e8bf338f-b39f-44a3-8292-fe0242e9a42e",
+    "fields": {
+      "status": "available",
+      "station": "69fcc65c-b9ce-4578-92a5-4093ae8f2961",
+      "user": null
+    }
+  },
+  {
+    "model": "stations.station",
+    "pk": "1e95b195-a0df-4842-871c-9bd6149e0a85",
+    "fields": {
+      "state": "working",
+      "name": "Uniwersytet",
+      "capacity": 10
+    }
+  },
+  {
+    "model": "stations.station",
+    "pk": "69fcc65c-b9ce-4578-92a5-4093ae8f2961",
+    "fields": {
+      "state": "working",
+      "name": "Politechnika",
+      "capacity": 10
+    }
+  },
+  {
+    "model": "stations.station",
+    "pk": "75fe1827-2a53-4b89-86dc-e6f99c27cd57",
+    "fields": {
+      "state": "working",
+      "name": "Pole Mokotowskie",
+      "capacity": 10
+    }
+  }
+]
