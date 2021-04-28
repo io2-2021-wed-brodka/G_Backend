@@ -94,10 +94,16 @@ class LoginTestCase(APITestCase):
         )
         response = self.client.post(
             reverse("login"),
-            {"login": username, "password": password, "role": UserRole.user},
+            {"login": username, "password": password},
         )
         token, _ = Token.objects.get_or_create(user=user)
-        self.assertDictEqual(response.data, {"token": token.key})
+        self.assertDictEqual(
+            response.data,
+            {
+                "token": token.key,
+                "role": user.role,
+            },
+        )
 
     def test_login_fail_bad_credentials_status_code(self):
         username = "john-doe"

@@ -45,13 +45,7 @@ class LoginAPIView(APIView):
     def post(self, request, *args, **kwargs):
         # we wrap default DRF obtain_auth_token flow to be compliant with specification
         ser = LoginSerializer(data=request.data)
-        if (
-            ser.is_valid()
-            # only authenticate if the role is matching
-            and User.objects.filter(
-                username=ser.data["login"], role=ser.data["role"]
-            ).exists()
-        ):
+        if ser.is_valid():
             # fall back to default DRF implementation
             user = authenticate(
                 request=request,
@@ -64,7 +58,13 @@ class LoginAPIView(APIView):
                     data={"message": "bad credentials"},
                 )
             token, _ = Token.objects.get_or_create(user=user)
-            return Response(status=status.HTTP_200_OK, data={"token": token.key})
+            return Response(
+                status=status.HTTP_200_OK,
+                data={
+                    "token": token.key,
+                    "role": user.role,
+                },
+            )
         # return specification compliant response
         return Response(
             status=status.HTTP_401_UNAUTHORIZED, data={"message": "bad credentials"}
