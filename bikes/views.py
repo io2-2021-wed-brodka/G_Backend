@@ -192,7 +192,7 @@ class ReservationsViewSet(
         bikes = Bike.objects.filter(reservation__user=self.request.user)
         return Response(
             status=status.HTTP_200_OK,
-            data={"bikes": ReadBikeSerializer(bikes, many=True).data},
+            data={"bikes": ReserveBikeSerializer(bikes, many=True).data},
         )
 
     @restrict(UserRole.user, UserRole.tech, UserRole.admin)

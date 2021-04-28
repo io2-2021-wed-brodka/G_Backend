@@ -1,10 +1,9 @@
 from django.utils import timezone
-from core.testcases import APITestCase
-
-from rest_framework.reverse import reverse
 from rest_framework import status
+from rest_framework.reverse import reverse
 
 from bikes.models import Bike, BikeStatus, Reservation
+from core.testcases import APITestCase
 from stations.models import Station, StationState
 from users.models import User
 
@@ -24,34 +23,36 @@ class BikesGetTestCase(APITestCase):
         response = self.client.get(reverse("bike-list"))
         self.assertDictEqual(
             response.data,
-            {"bikes": [
-                {
-                    "id": str(bike1.id),
-                    "station": None,
-                    "user": {"id": str(user.id), "name": user.name},
-                    "status": bike1.status,
-                },
-                {
-                    "id": str(bike2.id),
-                    "station": {
-                        "id": str(bike2.station.id),
-                        "name": bike2.station.name,
-                        "activeBikesCount": bike2.station.bikes.count(),
+            {
+                "bikes": [
+                    {
+                        "id": str(bike1.id),
+                        "station": None,
+                        "user": {"id": str(user.id), "name": user.name},
+                        "status": bike1.status,
                     },
-                    "user": None,
-                    "status": bike2.status,
-                },
-                {
-                    "id": str(bike3.id),
-                    "station": {
-                        "id": str(bike3.station.id),
-                        "name": bike3.station.name,
-                        "activeBikesCount": bike3.station.bikes.count(),
+                    {
+                        "id": str(bike2.id),
+                        "station": {
+                            "id": str(bike2.station.id),
+                            "name": bike2.station.name,
+                            "activeBikesCount": bike2.station.bikes.count(),
+                        },
+                        "user": None,
+                        "status": bike2.status,
                     },
-                    "user": None,
-                    "status": bike3.status,
-                },
-            ],}
+                    {
+                        "id": str(bike3.id),
+                        "station": {
+                            "id": str(bike3.station.id),
+                            "name": bike3.station.name,
+                            "activeBikesCount": bike3.station.bikes.count(),
+                        },
+                        "user": None,
+                        "status": bike3.status,
+                    },
+                ],
+            },
         )
 
 
@@ -115,28 +116,30 @@ class BikesGetRentedTestCase(APITestCase):
         response = self.client.get(reverse("bikes-rented-list"))
         self.assertDictEqual(
             response.data,
-            {"bikes": [
-                {
-                    "id": str(bike1.id),
-                    "station": {
-                        "id": str(bike1.station.id),
-                        "name": bike1.station.name,
-                        "activeBikesCount": bike1.station.bikes.count(),
+            {
+                "bikes": [
+                    {
+                        "id": str(bike1.id),
+                        "station": {
+                            "id": str(bike1.station.id),
+                            "name": bike1.station.name,
+                            "activeBikesCount": bike1.station.bikes.count(),
+                        },
+                        "user": {"id": str(self.user.id), "name": self.user.name},
+                        "status": bike1.status,
                     },
-                    "user": {"id": str(self.user.id), "name": self.user.name},
-                    "status": bike1.status,
-                },
-                {
-                    "id": str(bike2.id),
-                    "station": {
-                        "id": str(bike2.station.id),
-                        "name": bike2.station.name,
-                        "activeBikesCount": bike2.station.bikes.count(),
+                    {
+                        "id": str(bike2.id),
+                        "station": {
+                            "id": str(bike2.station.id),
+                            "name": bike2.station.name,
+                            "activeBikesCount": bike2.station.bikes.count(),
+                        },
+                        "user": {"id": str(self.user.id), "name": self.user.name},
+                        "status": bike2.status,
                     },
-                    "user": {"id": str(self.user.id), "name": self.user.name},
-                    "status": bike2.status,
-                },
-            ],}
+                ],
+            },
         )
 
 
@@ -261,7 +264,54 @@ class BikesRentTestCase(APITestCase):
         self.assertEqual(response.data, {"message": "User reached rental limit of 0."})
 
 
-class BikeReservationTestCase(APITestCase):
+class BikesGetReservedTestCase(APITestCase):
+    def test_get_reserved_bikes_status_code(self):
+        response = self.client.get(reverse("bikes-reserved-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_reserved_bikes_body(self):
+        other_user = User.objects.create(first_name="John", last_name="Doe")
+        station1 = Station.objects.create(name="Station Name 1")
+        station2 = Station.objects.create(name="Station Name 2")
+        bike1 = Bike.objects.create(station=station1)
+        bike1.reserve(self.user)
+        bike2 = Bike.objects.create(station=station2)
+        bike2.reserve(self.user)
+        Bike.objects.create(station=station2)
+        bike3 = Bike.objects.create(station=station2)
+        bike3.reserve(other_user)
+
+        response = self.client.get(reverse("bikes-reserved-list"))
+        self.assertDictEqual(
+            response.data,
+            {
+                "bikes": [
+                    {
+                        "id": str(bike1.id),
+                        "station": {
+                            "id": str(bike1.station.id),
+                            "name": bike1.station.name,
+                            "activeBikesCount": bike1.station.bikes.count(),
+                        },
+                        "reservedAt": bike1.reservation.reserved_at,
+                        "reservedTill": bike1.reservation.reserved_till,
+                    },
+                    {
+                        "id": str(bike2.id),
+                        "station": {
+                            "id": str(bike2.station.id),
+                            "name": bike2.station.name,
+                            "activeBikesCount": bike2.station.bikes.count(),
+                        },
+                        "reservedAt": bike2.reservation.reserved_at,
+                        "reservedTill": bike2.reservation.reserved_till,
+                    },
+                ]
+            },
+        )
+
+
+class BikeMakeReservationTestCase(APITestCase):
     def test_create_reservation(self):
         station = Station.objects.create(name="Station Name")
         reserved_bike = Bike.objects.create(
