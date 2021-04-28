@@ -60,25 +60,27 @@ class StationListGetTestCase(APITestCase):
             name="Good 'ol station 1", state=StationState.blocked
         )
         response = self.client.get(reverse("station-list"))
-        self.assertListEqual(
+        self.assertDictEqual(
             response.data,
-            [
-                {
-                    "id": str(station1.id),
-                    "name": station1.name,
-                    "activeBikesCount": station1.bikes.count(),
-                },
-                {
-                    "id": str(station2.id),
-                    "name": station2.name,
-                    "activeBikesCount": station2.bikes.count(),
-                },
-                {
-                    "id": str(station3.id),
-                    "name": station3.name,
-                    "activeBikesCount": station3.bikes.count(),
-                },
-            ],
+            {
+                "stations": [
+                    {
+                        "id": str(station1.id),
+                        "name": station1.name,
+                        "activeBikesCount": station1.bikes.count(),
+                    },
+                    {
+                        "id": str(station2.id),
+                        "name": station2.name,
+                        "activeBikesCount": station2.bikes.count(),
+                    },
+                    {
+                        "id": str(station3.id),
+                        "name": station3.name,
+                        "activeBikesCount": station3.bikes.count(),
+                    },
+                ],
+            },
         )
 
 
@@ -282,30 +284,32 @@ class ListBikesAtStationTestCase(APITestCase):
         Bike.objects.create(station=station2)
         Bike.objects.create(status=BikeStatus.reserved, station=station2)
         response = self.client.get(reverse("station-bikes", kwargs={"pk": station1.id}))
-        self.assertListEqual(
+        self.assertDictEqual(
             response.data,
-            [
-                {
-                    "id": str(bike1.id),
-                    "station": {
-                        "id": str(bike1.station.id),
-                        "name": bike1.station.name,
-                        "activeBikesCount": bike1.station.bikes.count(),
+            {
+                "bikes": [
+                    {
+                        "id": str(bike1.id),
+                        "station": {
+                            "id": str(bike1.station.id),
+                            "name": bike1.station.name,
+                            "activeBikesCount": bike1.station.bikes.count(),
+                        },
+                        "user": None,
+                        "status": bike1.status,
                     },
-                    "user": None,
-                    "status": bike1.status,
-                },
-                {
-                    "id": str(bike2.id),
-                    "station": {
-                        "id": str(bike2.station.id),
-                        "name": bike2.station.name,
-                        "activeBikesCount": bike2.station.bikes.count(),
+                    {
+                        "id": str(bike2.id),
+                        "station": {
+                            "id": str(bike2.station.id),
+                            "name": bike2.station.name,
+                            "activeBikesCount": bike2.station.bikes.count(),
+                        },
+                        "user": None,
+                        "status": bike2.status,
                     },
-                    "user": None,
-                    "status": bike2.status,
-                },
-            ],
+                ],
+            },
         )
 
 
@@ -314,23 +318,25 @@ class ActiveStationListGetTestCase(APITestCase):
         response = self.client.get(reverse("station-active"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_stations_body(self):
+    def test_get_active_stations_body(self):
         station1 = Station.objects.create(name="Good 'ol station 1")
         station2 = Station.objects.create(name="Good 'ol station 2")
         Station.objects.create(name="Good 'ol station 3", state=StationState.blocked)
         response = self.client.get(reverse("station-active"))
-        self.assertListEqual(
+        self.assertDictEqual(
             response.data,
-            [
-                {
-                    "id": str(station1.id),
-                    "name": station1.name,
-                    "activeBikesCount": station1.bikes.count(),
-                },
-                {
-                    "id": str(station2.id),
-                    "name": station2.name,
-                    "activeBikesCount": station2.bikes.count(),
-                },
-            ],
+            {
+                "stations": [
+                    {
+                        "id": str(station1.id),
+                        "name": station1.name,
+                        "activeBikesCount": station1.bikes.count(),
+                    },
+                    {
+                        "id": str(station2.id),
+                        "name": station2.name,
+                        "activeBikesCount": station2.bikes.count(),
+                    },
+                ],
+            },
         )

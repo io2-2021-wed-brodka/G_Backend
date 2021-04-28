@@ -41,7 +41,10 @@ class StationViewSet(
 
     @restrict(UserRole.admin, UserRole.tech)
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        return Response(
+            status=status.HTTP_200_OK,
+            data={"stations": StationSerializer(self.get_queryset(), many=True).data},
+        )
 
     @restrict(UserRole.admin)
     def destroy(self, request, *args, **kwargs):
@@ -65,7 +68,7 @@ class StationViewSet(
         stations = Station.objects.filter(state=StationState.working)
         return Response(
             status=status.HTTP_200_OK,
-            data=StationSerializer(stations, many=True).data,
+            data={"stations": StationSerializer(stations, many=True).data},
         )
 
     @action(detail=False, methods=["post"])
@@ -110,7 +113,7 @@ class StationViewSet(
         bikes = station.bikes.filter(status=BikeStatus.available)
         return Response(
             status=status.HTTP_200_OK,
-            data=ReadBikeSerializer(bikes, many=True).data,
+            data={"bikes": ReadBikeSerializer(bikes, many=True).data},
         )
 
     def return_bike_to_station(self, request, *args, **kwargs):
