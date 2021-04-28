@@ -87,7 +87,10 @@ class UserListAPIView(ListAPIView):
 
     @restrict(UserRole.admin)
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        return Response(
+            status=status.HTTP_200_OK,
+            data={"users": ReadUserSerializer(self.get_queryset(), many=True).data},
+        )
 
 
 class UserBlockedViewSet(
@@ -130,6 +133,13 @@ class UserBlockedViewSet(
         user.block()
         return Response(
             status=status.HTTP_201_CREATED, data=ReadUserSerializer(user).data
+        )
+
+    @restrict(UserRole.admin)
+    def list(self, request, *args, **kwargs):
+        return Response(
+            status=status.HTTP_200_OK,
+            data={"users": ReadUserSerializer(self.get_queryset(), many=True).data},
         )
 
     @restrict(UserRole.admin)

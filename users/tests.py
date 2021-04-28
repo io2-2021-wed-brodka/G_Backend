@@ -169,24 +169,26 @@ class UserListTestCase(APITestCase):
         user1 = User.objects.create(username="user1", role=UserRole.user)
         user2 = User.objects.create(username="user2", role=UserRole.user)
         response = self.client.get(reverse("user-list"))
-        self.assertListEqual(
+        self.assertDictEqual(
             response.data,
-            [
-                {
-                    # we create one admin account for authentication,
-                    # we need to consider him here
-                    "id": str(self.user.id),
-                    "name": str(self.user.name),
-                },
-                {
-                    "id": str(user1.id),
-                    "name": str(user1.name),
-                },
-                {
-                    "id": str(user2.id),
-                    "name": str(user2.name),
-                },
-            ],
+            {
+                "users": [
+                    {
+                        # we create one admin account for authentication,
+                        # we need to consider him here
+                        "id": str(self.user.id),
+                        "name": str(self.user.name),
+                    },
+                    {
+                        "id": str(user1.id),
+                        "name": str(user1.name),
+                    },
+                    {
+                        "id": str(user2.id),
+                        "name": str(user2.name),
+                    },
+                ],
+            },
         )
 
 
@@ -205,18 +207,20 @@ class UserBlockedListTestCase(APITestCase):
         )
         User.objects.create(username="user3", role=UserRole.user)
         response = self.client.get(reverse("users-blocked-list"))
-        self.assertListEqual(
+        self.assertDictEqual(
             response.data,
-            [
-                {
-                    "id": str(user1.id),
-                    "name": str(user1.name),
-                },
-                {
-                    "id": str(user2.id),
-                    "name": str(user2.name),
-                },
-            ],
+            {
+                "users": [
+                    {
+                        "id": str(user1.id),
+                        "name": str(user1.name),
+                    },
+                    {
+                        "id": str(user2.id),
+                        "name": str(user2.name),
+                    },
+                ],
+            },
         )
 
 
