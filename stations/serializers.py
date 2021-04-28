@@ -8,7 +8,7 @@ class StationSerializer(ModelSerializer):
     activeBikesCount = SerializerMethodField()
 
     class Meta:
-        fields = ("id", "name", "activeBikesCount")
+        fields = ("id", "name", "state", "activeBikesCount")
         model = Station
 
     def get_activeBikesCount(self, station):
