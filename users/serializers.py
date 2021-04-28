@@ -14,7 +14,7 @@ class ReadUserSerializer(ModelSerializer):
 
     @staticmethod
     def get_name(user: User) -> str:
-        return user.name
+        return user.username
 
 
 class RegisterSerializer(Serializer):
