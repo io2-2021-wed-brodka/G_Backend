@@ -41,10 +41,9 @@ class StationViewSet(
 
     @restrict(UserRole.admin, UserRole.tech)
     def list(self, request, *args, **kwargs):
-        stations = Station.objects.all()
         return Response(
             status=status.HTTP_200_OK,
-            data={"stations": StationSerializer(stations, many=True).data},
+            data={"stations": StationSerializer(self.get_queryset(), many=True).data},
         )
 
     @restrict(UserRole.admin)

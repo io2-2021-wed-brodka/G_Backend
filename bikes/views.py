@@ -43,10 +43,9 @@ class BikeViewSet(
 
     @restrict(UserRole.tech, UserRole.admin)
     def list(self, request, *args, **kwargs):
-        bikes = Bike.objects.all()
         return Response(
             status=status.HTTP_200_OK,
-            data={"bikes": ReadBikeSerializer(bikes, many=True).data},
+            data={"bikes": ReadBikeSerializer(self.get_queryset(), many=True).data},
         )
 
     @restrict(UserRole.admin)
@@ -128,10 +127,9 @@ class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewS
 
     @restrict(UserRole.user, UserRole.tech, UserRole.admin)
     def list(self, request, *args, **kwargs):
-        bikes = Bike.objects.filter(status=BikeStatus.rented, user=self.request.user)
         return Response(
             status=status.HTTP_200_OK,
-            data={"bikes": ReadBikeSerializer(bikes, many=True).data},
+            data={"bikes": ReadBikeSerializer(self.get_queryset(), many=True).data},
         )
 
 
@@ -189,10 +187,9 @@ class ReservationsViewSet(
 
     @restrict(UserRole.user, UserRole.tech, UserRole.admin)
     def list(self, request, *args, **kwargs):
-        bikes = Bike.objects.filter(reservation__user=self.request.user)
         return Response(
             status=status.HTTP_200_OK,
-            data={"bikes": ReserveBikeSerializer(bikes, many=True).data},
+            data={"bikes": ReserveBikeSerializer(self.get_queryset(), many=True).data},
         )
 
     @restrict(UserRole.user, UserRole.tech, UserRole.admin)
