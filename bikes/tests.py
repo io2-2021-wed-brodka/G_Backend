@@ -232,7 +232,7 @@ class BikesRentTestCase(APITestCase):
         rented_bike.refresh_from_db()
         self.assertEqual(rented_bike.station, None)
 
-    def test_rent_bike_that_was_rented(self):
+    def test_rent_bike_that_was_reserved(self):
         station = Station.objects.create(
             name="Station Name already rented x", state=StationState.working
         )
