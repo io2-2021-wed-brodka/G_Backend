@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from bikes.models import Bike, BikeStatus, Reservation
+from bikes.models import Bike, BikeStatus
 from bikes.serializers import ReadBikeSerializer
 from core.decorators import restrict
 from stations.models import Station, StationState
@@ -166,9 +166,9 @@ class StationBlockedViewSet(
         - Station must exist
         - Station must be currently working
         """
-        # station_id = request.data.get("id")
+        station_id = request.data.get("id")
         try:
-            station = Station.objects.get(request.data.get("id"))
+            station = Station.objects.get(id=station_id)
         except Station.DoesNotExist:
             return Response(
                 {"message": "Station not found."}, status=status.HTTP_404_NOT_FOUND
@@ -180,7 +180,7 @@ class StationBlockedViewSet(
             )
 
         station.block()
-        # self.cancel_all_reservations_at_station(station_id)
+        self.cancel_all_reservations_at_station(station_id)
         return Response(
             {"id": str(station.id), "name": station.name},
             status=status.HTTP_201_CREATED,
@@ -197,7 +197,7 @@ class StationBlockedViewSet(
         - Station must be currently blocked
         """
         try:
-            station = Station.objects.get(id=request.data.get("id"))
+            station = self.get_object()
         except Station.DoesNotExist:
             return Response(
                 {"message": "Station not found."}, status=status.HTTP_404_NOT_FOUND
@@ -209,7 +209,7 @@ class StationBlockedViewSet(
             )
 
         station.unblock()
-        return Response(status=status.HTTP_204_CREATED)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @restrict(UserRole.admin, UserRole.tech)
     def list(self, request, *args, **kwargs):
@@ -217,9 +217,10 @@ class StationBlockedViewSet(
             status=status.HTTP_200_OK,
             data={"stations": StationSerializer(self.get_queryset(), many=True).data},
         )
-"""
-    def cancel_all_reservations_at_station (stationId):
-        bikes = Bike.objects.filter(station=stationId)
+
+    @staticmethod
+    def cancel_all_reservations_at_station(station_id):
+        bikes = Bike.objects.filter(station=station_id)
         for bike in bikes:
             if bike.status == BikeStatus.reserved:
-                bike.cancel_reservation();"""
+                bike.cancel_reservation()
