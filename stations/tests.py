@@ -1,7 +1,8 @@
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from bikes.models import Bike, BikeStatus
+from bikes.models import Bike, BikeStatus, Reservation
 from core.testcases import APITestCase
 from stations.models import Station, StationState
 from users.models import User
@@ -147,7 +148,15 @@ class StationBlockTestCase(APITestCase):
         response = self.client.post(
             reverse("stations-blocked-list"), {"id": f"{station.id}"}
         )
-        self.assertEqual(response.data, {"id": str(station.id), "name": station.name})
+        self.assertEqual(
+            response.data,
+            {
+                "id": str(station.id),
+                "name": str(station.name),
+                "state": "blocked",
+                "activeBikesCount": 0,
+            },
+        )
 
     def test_delete_station_not_found(self):
         station = Station.objects.create(name="Good 'ol station")
@@ -166,6 +175,40 @@ class StationBlockTestCase(APITestCase):
             reverse("stations-blocked-list"), {"id": f"{station.id}"}
         )
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    def test_cancel_reservations_after_block_bike_status(self):
+        station = Station.objects.create(name="Good 'ol station")
+        Bike.objects.create(station=station)
+        reserved_bike = Bike.objects.create(station=station, status=BikeStatus.reserved)
+        time = timezone.now()
+        reservation = Reservation.objects.create(
+            bike=reserved_bike,
+            user=self.user,
+            reserved_at=time,
+            reserved_till=time + timezone.timedelta(minutes=30),
+        )
+        reserved_bike.reservation = reservation
+        reserved_bike.save()
+        self.client.post(reverse("stations-blocked-list"), {"id": f"{station.id}"})
+        self.assertEqual(
+            Bike.objects.get(id=reserved_bike.id).status, BikeStatus.available
+        )
+
+    def test_cancel_reservations_after_block_reservation_gets_deleted(self):
+        station = Station.objects.create(name="Good 'ol station")
+        Bike.objects.create(station=station)
+        reserved_bike = Bike.objects.create(station=station, status=BikeStatus.reserved)
+        time = timezone.now()
+        reservation = Reservation.objects.create(
+            bike=reserved_bike,
+            user=self.user,
+            reserved_at=time,
+            reserved_till=time + timezone.timedelta(minutes=30),
+        )
+        reserved_bike.reservation = reservation
+        reserved_bike.save()
+        self.client.post(reverse("stations-blocked-list"), {"id": f"{station.id}"})
+        self.assertFalse(Reservation.objects.filter(id=reservation.id).exists())
 
 
 class StationBlockedListTestCase(APITestCase):

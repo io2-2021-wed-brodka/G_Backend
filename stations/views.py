@@ -180,10 +180,10 @@ class StationBlockedViewSet(
             )
 
         station.block()
-        self.cancel_all_reservations_at_station(station_id)
+        station.cancel_all_reservations()
         return Response(
-            {"id": str(station.id), "name": station.name},
             status=status.HTTP_201_CREATED,
+            data=StationSerializer(station).data,
         )
 
     @restrict(UserRole.admin)
@@ -217,10 +217,3 @@ class StationBlockedViewSet(
             status=status.HTTP_200_OK,
             data={"stations": StationSerializer(self.get_queryset(), many=True).data},
         )
-
-    @staticmethod
-    def cancel_all_reservations_at_station(station_id):
-        bikes = Bike.objects.filter(station=station_id)
-        for bike in bikes:
-            if bike.status == BikeStatus.reserved:
-                bike.cancel_reservation()
