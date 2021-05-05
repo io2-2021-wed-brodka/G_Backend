@@ -204,7 +204,7 @@ class StationBlockedViewSet(
             )
         if station.state != StationState.blocked:
             return Response(
-                {"message": "Station is not currently blocked."},
+                {"message": "Station not blocked."},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
 

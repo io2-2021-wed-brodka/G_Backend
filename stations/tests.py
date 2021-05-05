@@ -137,27 +137,105 @@ class StationDeleteTestCase(APITestCase):
 class StationBlockTestCase(APITestCase):
     def test_block_station_successful_status_code(self):
         station = Station.objects.create(name="Good 'ol station")
-        response = self.client.post(reverse("station-blocked"), {"id": f"{station.id}"})
+        response = self.client.post(reverse("stations-blocked-list"), {"id": f"{station.id}"})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_block_station_successful_body(self):
         station = Station.objects.create(name="Good 'ol station")
-        response = self.client.post(reverse("station-blocked"), {"id": f"{station.id}"})
+        response = self.client.post(reverse("stations-blocked-list"), {"id": f"{station.id}"})
         self.assertEqual(response.data, {"id": str(station.id), "name": station.name})
 
     def test_delete_station_not_found(self):
         station = Station.objects.create(name="Good 'ol station")
         delete_id = station.id
         Station.objects.filter(id=station.id).delete()
-        response = self.client.post(reverse("station-blocked"), {"id": f"{delete_id}"})
+        response = self.client.post(reverse("stations-blocked-list"), {"id": f"{delete_id}"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_station_already_blocked(self):
         station = Station.objects.create(
             name="Good 'ol station", state=StationState.blocked
         )
-        response = self.client.post(reverse("station-blocked"), {"id": f"{station.id}"})
+        response = self.client.post(reverse("stations-blocked-list"), {"id": f"{station.id}"})
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+
+class StationBlockedListTestCase(APITestCase):
+    def test_list_blocked_stations_status_code(self):
+        response = self.client.get(reverse("stations-blocked-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_list_stations_body(self):
+        Station.objects.create(name="Good 'ol station 1")
+        station1 = Station.objects.create(
+            name="Good 'ol station 2", state=StationState.blocked
+        )
+        station2 = Station.objects.create(
+            name="Good 'ol station 3", state=StationState.blocked
+        )
+        Station.objects.create(name="Good 'ol station 4")
+        response = self.client.get(reverse("stations-blocked-list"))
+        self.assertDictEqual(
+            response.data,
+            {
+                "stations": [
+                    {
+                        "id": str(station1.id),
+                        "name": station1.name,
+                        "state": station1.state,
+                        "activeBikesCount": station1.bikes.count(),
+                    },
+                    {
+                        "id": str(station2.id),
+                        "name": station2.name,
+                        "state": station2.state,
+                        "activeBikesCount": station2.bikes.count(),
+                    },
+                ],
+            },
+        )
+
+
+class StationUnblockTestCase(APITestCase):
+    def test_unblock_station_successful_status_code(self):
+        station = Station.objects.create(
+            name="Good 'ol station", state=StationState.blocked
+        )
+        response = self.client.delete(
+            reverse("stations-blocked-detail", kwargs={"pk": station.id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_unblock_station_body(self):
+        station = Station.objects.create(
+            name="Good 'ol station", state=StationState.blocked
+        )
+        response = self.client.delete(
+            reverse("stations-blocked-detail", kwargs={"pk": station.id})
+        )
+        self.assertEqual(response.data, None)
+
+    def test_unblock_station_station_gets_unblocked(self):
+        station = Station.objects.create(
+            name="Good 'ol station", state=StationState.blocked
+        )
+        self.client.delete(reverse("stations-blocked-detail", kwargs={"pk": station.id}))
+        station.refresh_from_db()
+        self.assertEqual(station.state, StationState.working)
+
+    def test_unblock_station_fails_already_unblocked_status_code(self):
+        station = Station.objects.create(name="Good 'ol station")
+        response = self.client.delete(
+            reverse("stations-blocked-detail", kwargs={"pk": station.id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    def test_unblock_station_fails_already_unblocked_body(self):
+        station = Station.objects.create(name="Good 'ol station")
+        response = self.client.delete(
+            reverse("stations-blocked-detail", kwargs={"pk": station.id})
+        )
+        self.assertEqual(response.data, {"message": "Station not blocked."})
 
 
 class StationReturnBikeTestCase(APITestCase):
