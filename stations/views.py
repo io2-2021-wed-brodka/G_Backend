@@ -71,35 +71,6 @@ class StationViewSet(
             data={"stations": StationSerializer(stations, many=True).data},
         )
 
-    @action(detail=False, methods=["post"])
-    @restrict(UserRole.admin)
-    def blocked(self, request, *args, **kwargs):
-        """
-        Block a station.
-        Station id is provided in body.
-
-        Conditions:
-        - Station must exist
-        - Station must be currently working
-        """
-        try:
-            station = Station.objects.get(id=request.data.get("id"))
-        except Station.DoesNotExist:
-            return Response(
-                {"message": "Station not found."}, status=status.HTTP_404_NOT_FOUND
-            )
-        if station.state != StationState.working:
-            return Response(
-                {"message": "Station already blocked."},
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            )
-
-        station.block()
-        return Response(
-            {"id": str(station.id), "name": station.name},
-            status=status.HTTP_201_CREATED,
-        )
-
     @action(detail=True, methods=["get", "post"])
     @restrict(UserRole.admin, UserRole.tech, UserRole.user)
     def bikes(self, request, *args, **kwargs):
@@ -164,4 +135,85 @@ class StationViewSet(
         return Response(
             data=ReadBikeSerializer(bike).data,
             status=status.HTTP_201_CREATED,
+        )
+
+
+class StationBlockedViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    GenericViewSet,
+):
+    queryset = Station.objects.filter(state=StationState.blocked)
+    serializer_class = StationSerializer
+
+    def handle_exception(self, exc):
+        if isinstance(exc, Http404):
+            return Response(
+                {"message": "Station not blocked."},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+
+        return super().handle_exception(exc)
+
+    @restrict(UserRole.admin)
+    def create(self, request, *args, **kwargs):
+        """
+        Block a station.
+        Station id is provided in body.
+
+        Conditions:
+        - Station must exist
+        - Station must be currently working
+        """
+        station_id = request.data.get("id")
+        try:
+            station = Station.objects.get(id=station_id)
+        except Station.DoesNotExist:
+            return Response(
+                {"message": "Station not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+        if station.state != StationState.working:
+            return Response(
+                {"message": "Station already blocked."},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+
+        station.block()
+        station.cancel_all_reservations()
+        return Response(
+            status=status.HTTP_201_CREATED,
+            data=StationSerializer(station).data,
+        )
+
+    @restrict(UserRole.admin)
+    def destroy(self, request, *args, **kwargs):
+        """
+        Unblock a station.
+        Station id is provided in path.
+
+        Conditions:
+        - Station must exist
+        - Station must be currently blocked
+        """
+        try:
+            station = self.get_object()
+        except Station.DoesNotExist:
+            return Response(
+                {"message": "Station not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+        if station.state != StationState.blocked:
+            return Response(
+                {"message": "Station not blocked."},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+
+        station.unblock()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @restrict(UserRole.admin, UserRole.tech)
+    def list(self, request, *args, **kwargs):
+        return Response(
+            status=status.HTTP_200_OK,
+            data={"stations": StationSerializer(self.get_queryset(), many=True).data},
         )
