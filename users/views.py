@@ -3,7 +3,6 @@ from django.http import Http404
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, mixins
 from rest_framework.authtoken.models import Token
-from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -220,8 +219,11 @@ class UserBlockedViewSet(
 
 
 class TechViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
     mixins.DestroyModelMixin,
-    APIView,
+    GenericViewSet,
 ):
     queryset = User.objects.filter(role=UserRole.tech)
     serializer_class = ReadUserSerializer
@@ -235,11 +237,15 @@ class TechViewSet(
 
     @restrict(UserRole.admin)
     def retrieve(self, request, *args, **kwargs):
-        tech=ReadUserSerializer(self.get_queryset(), many=True).data.get(id=kwargs.id)
+        tech = ReadUserSerializer(self.get_queryset(), many=True).data.get(id=kwargs.id)
         try:
             return Response(
                 status=status.HTTP_200_OK,
-                data={"tech": ReadUserSerializer(self.get_queryset(), many=True).data.get(id=kwargs.id)},
+                data={
+                    "tech": ReadUserSerializer(self.get_queryset(), many=True).data.get(
+                        id=kwargs.id
+                    )
+                },
             )
         except Exception as e:
             return Response(
@@ -255,8 +261,7 @@ class TechViewSet(
         user = serializer.save()
         return Response(
             status=status.HTTP_201_CREATED,
-            data={"id": user.id,
-                  "name": user.username},
+            data={"id": user.id, "name": user.username},
         )
 
     @restrict(UserRole.admin)
