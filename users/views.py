@@ -3,6 +3,7 @@ from django.http import Http404
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, mixins
 from rest_framework.authtoken.models import Token
+from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -216,3 +217,60 @@ class UserBlockedViewSet(
         user = self.get_object()
         user.unblock()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TechViewSet(
+    mixins.DestroyModelMixin,
+    APIView,
+):
+    queryset = User.objects.filter(role=UserRole.tech)
+    serializer_class = ReadUserSerializer
+
+    @restrict(UserRole.admin)
+    def list(self, request, *args, **kwargs):
+        return Response(
+            status=status.HTTP_200_OK,
+            data={"techs": ReadUserSerializer(self.get_queryset(), many=True).data},
+        )
+
+    @restrict(UserRole.admin)
+    def retrieve(self, request, *args, **kwargs):
+        tech=ReadUserSerializer(self.get_queryset(), many=True).data.get(id=kwargs.id)
+        try:
+            return Response(
+                status=status.HTTP_200_OK,
+                data={"tech": ReadUserSerializer(self.get_queryset(), many=True).data.get(id=kwargs.id)},
+            )
+        except Exception as e:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"message": "Tech not found"},
+            )
+
+    @restrict(UserRole.admin)
+    def create(self, request, *args, **kwargs):
+        serializer = RegisterSerializer
+        serializer = self.get_serializer(name=request.name, password=request.password)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(
+            status=status.HTTP_201_CREATED,
+            data={"id": user.id,
+                  "name": user.username},
+        )
+
+    @restrict(UserRole.admin)
+    def destroy(self, request, *args, **kwargs):
+        try:
+            removed_tech = User.objects.filter(role=UserRole.tech).get(id=kwargs["pk"])
+        except User.DoesNotExist:
+            return Response(
+                data={"message": "Tech not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        if removed_tech.role != UserRole.tech:
+            return Response(
+                data={"message": "Tech not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        return super().destroy(request, *args, **kwargs)
