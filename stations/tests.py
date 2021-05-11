@@ -522,3 +522,56 @@ class ActiveStationListGetTestCase(APITestCase):
                 ],
             },
         )
+
+
+class StationUnblockTestCase(APITestCase):
+    def test_unblock_station_status_code(self):
+        station = Station.objects.create(
+            name="Some station",
+            state=StationState.blocked,
+        )
+        response = self.client.delete(
+            reverse("stations-blocked-detail", kwargs={"pk": station.id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_unblock_station_body(self):
+        station = Station.objects.create(
+            name="Some station",
+            state=StationState.blocked,
+        )
+        response = self.client.delete(
+            reverse("stations-blocked-detail", kwargs={"pk": station.id})
+        )
+        self.assertEqual(response.data, None)
+
+    def test_unblock_station_station_gets_unblocked(self):
+        station = Station.objects.create(
+            name="Some station",
+            state=StationState.blocked,
+        )
+        self.client.delete(
+            reverse("stations-blocked-detail", kwargs={"pk": station.id})
+        )
+        station.refresh_from_db()
+        self.assertEqual(station.state, StationState.working)
+
+    def test_unblock_station_fails_already_unblocked_status_code(self):
+        station = Station.objects.create(
+            name="Some station",
+            state=StationState.working,
+        )
+        response = self.client.delete(
+            reverse("stations-blocked-detail", kwargs={"pk": station.id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    def test_unblock_station_fails_already_unblocked_body(self):
+        station = Station.objects.create(
+            name="Some station",
+            state=StationState.working,
+        )
+        response = self.client.delete(
+            reverse("stations-blocked-detail", kwargs={"pk": station.id})
+        )
+        self.assertEqual(response.data, {"message": "Station not blocked."})
