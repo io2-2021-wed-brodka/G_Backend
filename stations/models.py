@@ -25,3 +25,7 @@ class Station(models.Model):
     def block(self):
         self.state = StationState.blocked
         self.save()
+
+    def unblock(self):
+        self.state = StationState.working
+        self.save()

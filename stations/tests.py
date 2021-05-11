@@ -137,26 +137,34 @@ class StationDeleteTestCase(APITestCase):
 class StationBlockTestCase(APITestCase):
     def test_block_station_successful_status_code(self):
         station = Station.objects.create(name="Good 'ol station")
-        response = self.client.post(reverse("station-blocked"), {"id": f"{station.id}"})
+        response = self.client.post(
+            reverse("stations-blocked-list"), {"id": f"{station.id}"}
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_block_station_successful_body(self):
         station = Station.objects.create(name="Good 'ol station")
-        response = self.client.post(reverse("station-blocked"), {"id": f"{station.id}"})
+        response = self.client.post(
+            reverse("stations-blocked-list"), {"id": f"{station.id}"}
+        )
         self.assertEqual(response.data, {"id": str(station.id), "name": station.name})
 
     def test_delete_station_not_found(self):
         station = Station.objects.create(name="Good 'ol station")
         delete_id = station.id
         Station.objects.filter(id=station.id).delete()
-        response = self.client.post(reverse("station-blocked"), {"id": f"{delete_id}"})
+        response = self.client.post(
+            reverse("stations-blocked-list"), {"id": f"{delete_id}"}
+        )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_station_already_blocked(self):
         station = Station.objects.create(
             name="Good 'ol station", state=StationState.blocked
         )
-        response = self.client.post(reverse("station-blocked"), {"id": f"{station.id}"})
+        response = self.client.post(
+            reverse("stations-blocked-list"), {"id": f"{station.id}"}
+        )
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
@@ -350,3 +358,56 @@ class ActiveStationListGetTestCase(APITestCase):
                 ],
             },
         )
+
+
+class StationUnblockTestCase(APITestCase):
+    def test_unblock_station_status_code(self):
+        station = Station.objects.create(
+            name="Some station",
+            state=StationState.blocked,
+        )
+        response = self.client.delete(
+            reverse("stations-blocked-detail", kwargs={"pk": station.id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_unblock_station_body(self):
+        station = Station.objects.create(
+            name="Some station",
+            state=StationState.blocked,
+        )
+        response = self.client.delete(
+            reverse("stations-blocked-detail", kwargs={"pk": station.id})
+        )
+        self.assertEqual(response.data, None)
+
+    def test_unblock_station_station_gets_unblocked(self):
+        station = Station.objects.create(
+            name="Some station",
+            state=StationState.blocked,
+        )
+        self.client.delete(
+            reverse("stations-blocked-detail", kwargs={"pk": station.id})
+        )
+        station.refresh_from_db()
+        self.assertEqual(station.state, StationState.working)
+
+    def test_unblock_station_fails_already_unblocked_status_code(self):
+        station = Station.objects.create(
+            name="Some station",
+            state=StationState.working,
+        )
+        response = self.client.delete(
+            reverse("stations-blocked-detail", kwargs={"pk": station.id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    def test_unblock_station_fails_already_unblocked_body(self):
+        station = Station.objects.create(
+            name="Some station",
+            state=StationState.working,
+        )
+        response = self.client.delete(
+            reverse("stations-blocked-detail", kwargs={"pk": station.id})
+        )
+        self.assertEqual(response.data, {"message": "Station not blocked."})
