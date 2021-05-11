@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
-from rest_framework.serializers import ModelSerializer, Serializer
+from rest_framework.serializers import ModelSerializer
 
+from core.serializers import IOSerializer
 from users.models import User
 
 
@@ -17,23 +18,24 @@ class ReadUserSerializer(ModelSerializer):
         return user.username
 
 
-class RegisterSerializer(Serializer):
+class ListUsersSerializer(IOSerializer):
+    users = ReadUserSerializer(required=True, many=True)
+
+
+class RegisterRequestSerializer(IOSerializer):
     login = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
 
-    def update(self, instance, validated_data):
-        pass
 
-    def create(self, validated_data):
-        pass
+class RegisterResponseSerializer(IOSerializer):
+    token = serializers.CharField(required=True)
 
 
-class LoginSerializer(Serializer):
+class LoginRequestSerializer(IOSerializer):
     login = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
 
-    def update(self, instance, validated_data):
-        pass
 
-    def create(self, validated_data):
-        pass
+class LoginResponseSerializer(IOSerializer):
+    token = serializers.CharField(required=True)
+    role = serializers.CharField(required=True)
