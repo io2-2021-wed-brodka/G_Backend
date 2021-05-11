@@ -1,3 +1,5 @@
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from rest_framework import viewsets, status, mixins
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.response import Response
@@ -12,6 +14,7 @@ from bikes.serializers import (
     ReserveBikeSerializer,
 )
 from core.decorators import restrict
+from core.serializers import MessageSerializer
 from stations.models import StationState
 from users.models import UserRole, UserState
 
@@ -23,6 +26,8 @@ class BikeViewSet(
     GenericViewSet,
 ):
     queryset = Bike.objects.all()
+    response_serializer = ReadBikeSerializer
+    message_serializer = MessageSerializer
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -30,6 +35,12 @@ class BikeViewSet(
         else:
             return ReadBikeSerializer
 
+    @swagger_auto_schema(
+        responses={
+            201: openapi.Response("Successful response", response_serializer),
+            404: openapi.Response("Not found", message_serializer),
+        }
+    )
     @restrict(UserRole.admin)
     def create(self, request, *args, **kwargs):
         # we override the whole CreateModelMixin.create, because we need to keep created object
@@ -48,21 +59,39 @@ class BikeViewSet(
             data={"bikes": ReadBikeSerializer(self.get_queryset(), many=True).data},
         )
 
+    @swagger_auto_schema(
+        responses={
+            404: openapi.Response("Not found", message_serializer),
+            422: openapi.Response("Errors", message_serializer),
+        }
+    )
     @restrict(UserRole.admin)
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
 
 class RentedBikesViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
+    request_serializer = RentBikeSerializer
+    response_serializer = ReadBikeSerializer
+    message_serializer = MessageSerializer
+
     def get_queryset(self):
         return Bike.objects.filter(status=BikeStatus.rented, user=self.request.user)
 
     def get_serializer_class(self):
         if self.action == "create":
-            return RentBikeSerializer
+            return self.request_serializer
         else:
-            return ReadBikeSerializer
+            return self.response_serializer
 
+    @swagger_auto_schema(
+        responses={
+            201: openapi.Response("Successful response", response_serializer),
+            403: openapi.Response("User is blocked", message_serializer),
+            404: openapi.Response("Not found", message_serializer),
+            422: openapi.Response("Error", message_serializer),
+        }
+    )
     @restrict(UserRole.user, UserRole.tech, UserRole.admin)
     def create(self, request, *args, **kwargs):
         """
@@ -139,10 +168,18 @@ class ReservationsViewSet(
     GenericViewSet,
 ):
     serializer_class = ReserveBikeSerializer
+    message_serializer = MessageSerializer
 
     def get_queryset(self):
         return Bike.objects.filter(reservation__user=self.request.user)
 
+    @swagger_auto_schema(
+        responses={
+            403: openapi.Response("User blocked", message_serializer),
+            404: openapi.Response("Not found", message_serializer),
+            422: openapi.Response("Errors", message_serializer),
+        }
+    )
     @restrict(UserRole.user, UserRole.tech, UserRole.admin)
     def create(self, request, *args, **kwargs):
         """
@@ -192,6 +229,12 @@ class ReservationsViewSet(
             data={"bikes": ReserveBikeSerializer(self.get_queryset(), many=True).data},
         )
 
+    @swagger_auto_schema(
+        responses={
+            404: openapi.Response("Not found", message_serializer),
+            422: openapi.Response("Errors", message_serializer),
+        }
+    )
     @restrict(UserRole.user, UserRole.tech, UserRole.admin)
     def destroy(self, request, *args, **kwargs):
         """
