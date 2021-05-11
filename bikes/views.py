@@ -14,7 +14,11 @@ from bikes.serializers import (
     ReserveBikeSerializer,
 )
 from core.decorators import restrict
+<<<<<<< HEAD
 from core.serializers import MessageSerializer, IdSerializer
+=======
+from core.serializers import MessageSerializer
+>>>>>>> 65121a6... swagger for bikes app, checked
 from stations.models import StationState
 from users.models import UserRole, UserState
 
