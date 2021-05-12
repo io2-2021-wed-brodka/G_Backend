@@ -74,6 +74,14 @@ class Bike(models.Model):
         self.status = BikeStatus.available
         self.save()
 
+    def block(self):
+        self.status = BikeStatus.blocked
+        self.save()
+
+    def unblock(self):
+        self.status = BikeStatus.available
+        self.save()
+
 
 class Reservation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

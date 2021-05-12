@@ -166,7 +166,7 @@ class StationsBlockedViewSet(
             400: openapi.Response("Bad request", message_serializer),
             404: openapi.Response("Not found", message_serializer),
             422: openapi.Response("Not blocked", message_serializer),
-        }
+        },
     )
     @restrict(UserRole.admin)
     def create(self, request, *args, **kwargs):
@@ -204,7 +204,12 @@ class StationsBlockedViewSet(
 
     @restrict(UserRole.admin)
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        return Response(
+            status=status.HTTP_200_OK,
+            data={
+                "stations": self.serializer_class(self.get_queryset(), many=True).data
+            },
+        )
 
     @swagger_auto_schema(
         responses={
