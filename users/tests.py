@@ -304,33 +304,31 @@ class UserUnblockTestCase(APITestCase):
         self.assertEqual(response.data, {"message": "User not blocked."})
 
 
-class TechTestCase(APITestCase):
+class TechCreateTestCase(APITestCase):
     def test_tech_create_status_code(self):
-        user = User.objects.create(
-            username="user0", password="1234", role=UserRole.user
-        )
         response = self.client.post(
             reverse("tech-list"),
-            data={"name": user.username, "password": user.password},
+            data={"name": "tech0", "password": "p@ssw0rd!"},
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_tech_create_body(self):
-        user = User.objects.create(
-            username="user0", password="1234", role=UserRole.user
-        )
+        username = "tech0"
         response = self.client.post(
             reverse("tech-list"),
-            data={"name": user.username, "password": user.password},
+            data={"name": username, "password": "p@ssw0rd!"},
         )
+        user = User.objects.get(username=username)
         self.assertDictEqual(
             response.data,
             {
                 "id": str(user.id),
-                "name": user.name,
+                "name": username,
             },
         )
 
+
+class TechGetTestCase(APITestCase):
     def test_get_tech_status_code(self):
         user = User.objects.create(
             username="user0", password="1234", role=UserRole.tech
@@ -342,14 +340,14 @@ class TechTestCase(APITestCase):
         user = User.objects.create(
             username="user194", password="5678", role=UserRole.user
         )  # non-tech user
-        response = self.client.get(reverse("tech-list"), kwargs={"pk": user.id})
+        response = self.client.get(reverse("tech-detail", kwargs={"pk": user.id}))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_tech_body(self):
         user = User.objects.create(
             username="user0", password="1234", role=UserRole.tech
         )
-        response = self.client.get(reverse("tech-list"), kwargs={"pk": user.id})
+        response = self.client.get(reverse("tech-detail", kwargs={"pk": user.id}))
         self.assertDictEqual(
             response.data,
             {
@@ -358,22 +356,25 @@ class TechTestCase(APITestCase):
             },
         )
 
+
+class TechListTestCase(APITestCase):
     def test_get_tech_list_status_code(self):
         response = self.client.get(reverse("tech-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_tech_list_body(self):
         user1 = User.objects.create(
-            username="user0", password="1234", role=UserRole.tech
+            username="tech0", password="1234", role=UserRole.tech
         )
         user2 = User.objects.create(
-            username="user1", password="5678", role=UserRole.tech
+            username="tech1", password="5678", role=UserRole.tech
         )
+        User.objects.create(username="user0", password="5678", role=UserRole.user)
         response = self.client.get(reverse("tech-list"))
         self.assertDictEqual(
             response.data,
             {
-                "users": [
+                "techs": [
                     {
                         "id": str(user1.id),
                         "name": str(user1.username),
@@ -386,6 +387,8 @@ class TechTestCase(APITestCase):
             },
         )
 
+
+class TechDeleteTestCase(APITestCase):
     def test_delete_tech_status_code(self):
         user = User.objects.create(
             username="user0", password="1234", role=UserRole.tech

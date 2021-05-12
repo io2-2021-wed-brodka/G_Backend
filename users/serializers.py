@@ -39,3 +39,8 @@ class LoginRequestSerializer(IOSerializer):
 class LoginResponseSerializer(IOSerializer):
     token = serializers.CharField(required=True)
     role = serializers.CharField(required=True)
+
+
+class CreateTechSerializer(IOSerializer):
+    name = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)
