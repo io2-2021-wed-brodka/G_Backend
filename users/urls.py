@@ -7,10 +7,12 @@ from users.views import (
     LogoutAPIView,
     UserBlockedViewSet,
     UserListAPIView,
+    TechViewSet,
 )
 
 router = DefaultRouter()
 router.register("users/blocked", UserBlockedViewSet, basename="users-blocked")
+router.register("techs", TechViewSet, basename="tech")
 
 urlpatterns = [
     path("register/", RegisterAPIView.as_view(), name="register"),

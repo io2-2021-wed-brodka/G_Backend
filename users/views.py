@@ -20,6 +20,7 @@ from users.serializers import (
     ReadUserSerializer,
     LoginResponseSerializer,
     RegisterResponseSerializer,
+    CreateTechSerializer,
 )
 
 
@@ -215,4 +216,88 @@ class UserBlockedViewSet(
     def destroy(self, request, *args, **kwargs):
         user = self.get_object()
         user.unblock()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TechViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    GenericViewSet,
+):
+    queryset = User.objects.filter(role=UserRole.tech)
+    serializer_class = ReadUserSerializer
+    request_serializer = CreateTechSerializer
+    response_serializer = RegisterRequestSerializer
+    message_serializer = MessageSerializer
+
+    @swagger_auto_schema(
+        request_body=request_serializer,
+        responses={
+            201: openapi.Response("Successful response", serializer_class),
+            400: openapi.Response("Bad request", message_serializer),
+            404: openapi.Response("Not found", message_serializer),
+            422: openapi.Response("Not blocked", message_serializer),
+        },
+    )
+    @restrict(UserRole.admin)
+    def create(self, request, *args, **kwargs):
+        ser = self.request_serializer(data=request.data)
+        if not ser.is_valid():
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data=self.message_serializer(
+                    data={"message": "Invalid request."}
+                ).initial_data,
+            )
+        if User.objects.filter(username=ser.data["name"]).exists():
+            return Response(
+                status=status.HTTP_409_CONFLICT,
+                data=self.message_serializer(
+                    data={"message": "Username already taken."}
+                ).initial_data,
+            )
+        user = User.objects.create_user(
+            username=ser.data["name"],
+            password=ser.data["password"],
+            role=UserRole.tech,
+        )
+        return Response(
+            status=status.HTTP_201_CREATED,
+            data=self.response_serializer(
+                data={
+                    "id": str(user.id),
+                    "name": ser.data["name"],
+                }
+            ).initial_data,
+        )
+
+    @restrict(UserRole.admin)
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @restrict(UserRole.admin)
+    def list(self, request, *args, **kwargs):
+        return Response(
+            status=status.HTTP_200_OK,
+            data={"techs": self.serializer_class(self.get_queryset(), many=True).data},
+        )
+
+    @swagger_auto_schema(
+        responses={
+            404: openapi.Response("Not found", message_serializer),
+            422: openapi.Response("Not blocked", message_serializer),
+        }
+    )
+    @restrict(UserRole.admin)
+    def destroy(self, request, *args, **kwargs):
+        try:
+            user = User.objects.get(role=UserRole.tech, id=kwargs["pk"])
+        except User.DoesNotExist:
+            return Response(
+                {"message": "Tech does not exist."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
