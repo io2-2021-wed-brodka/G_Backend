@@ -632,3 +632,15 @@ class BikeUnblockTestCase(APITestCase):
             reverse("bikes-blocked-detail", kwargs={"pk": bike.id})
         )
         self.assertEqual(response.data, {"message": "Bike not blocked."})
+
+    def test_unblock_bike_fails_not_found(self):
+        station = Station.objects.create(name="Station Name 1")
+        bike = Bike.objects.create(station=station, status=BikeStatus.blocked)
+        bike.refresh_from_db()
+        delete_id = bike.id
+        Bike.objects.filter(id=bike.id).delete()
+        response = self.client.delete(
+            reverse("bikes-blocked-detail", kwargs={"pk": delete_id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertDictEqual(response.data, {"message": "Bike does not exist."})
