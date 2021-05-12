@@ -42,8 +42,8 @@ class ReserveBikeSerializer(serializers.ModelSerializer):
         model = Bike
         fields = ("id", "station", "reservedAt", "reservedTill")
 
-    def get_reservedAt(self, bike):
+    def get_reservedAt(self, bike):  # noqa
         return bike.reservation.reserved_at
 
-    def get_reservedTill(self, bike):
+    def get_reservedTill(self, bike):  # noqa
         return bike.reservation.reserved_till

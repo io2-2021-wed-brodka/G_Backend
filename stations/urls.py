@@ -5,7 +5,7 @@ from stations import views
 
 router = DefaultRouter()
 router.register(
-    "stations/blocked", views.StationBlockedViewSet, basename="stations-blocked"
+    "stations/blocked", views.StationsBlockedViewSet, basename="stations-blocked"
 )
 router.register("stations", views.StationViewSet)
 

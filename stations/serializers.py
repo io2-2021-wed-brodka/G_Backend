@@ -11,5 +11,6 @@ class StationSerializer(ModelSerializer):
         fields = ("id", "name", "state", "activeBikesCount")
         model = Station
 
-    def get_activeBikesCount(self, station):
+    @staticmethod
+    def get_activeBikesCount(station):  # noqa
         return station.bikes.count()

@@ -36,6 +36,8 @@ docker build . -t salty-bikes
 docker run -t salty-bikes
 ```
 
+Internal documentation of endpoints is available as [swagger](https://127.0.0.1:8000/swagger/).
+
 ## How to contribute
 
 Given an issue, create a branch named `{feat,bug,chore}/<jira-issue-id>-some-meaningful-name` (e.g. `feat/70-rented-bike-list`) and a PR to `main` branch.   

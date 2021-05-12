@@ -135,6 +135,41 @@ class StationDeleteTestCase(APITestCase):
         self.assertEqual(response.data, {"message": "Station not found."})
 
 
+class StationListBlockedTestCase(APITestCase):
+    def test_get_stations_status_code(self):
+        response = self.client.get(reverse("stations-blocked-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_stations_body(self):
+        station1 = Station.objects.create(
+            name="Good 'ol station 1", state=StationState.blocked
+        )
+        station2 = Station.objects.create(
+            name="Good 'ol station 2", state=StationState.blocked
+        )
+        Station.objects.create(name="Good 'ol station 3")
+        response = self.client.get(reverse("stations-blocked-list"))
+        self.assertDictEqual(
+            response.data,
+            {
+                "stations": [
+                    {
+                        "id": str(station1.id),
+                        "name": station1.name,
+                        "state": station1.state,
+                        "activeBikesCount": station1.bikes.count(),
+                    },
+                    {
+                        "id": str(station2.id),
+                        "name": station2.name,
+                        "state": station2.state,
+                        "activeBikesCount": station2.bikes.count(),
+                    },
+                ],
+            },
+        )
+
+
 class StationBlockTestCase(APITestCase):
     def test_block_station_successful_status_code(self):
         station = Station.objects.create(name="Good 'ol station")
@@ -158,7 +193,13 @@ class StationBlockTestCase(APITestCase):
             },
         )
 
-    def test_delete_station_not_found(self):
+    def test_block_station_gets_blocked(self):
+        station = Station.objects.create(name="Good 'ol station")
+        self.client.post(reverse("stations-blocked-list"), {"id": f"{station.id}"})
+        station.refresh_from_db()
+        self.assertEqual(station.state, StationState.blocked)
+
+    def test_block_station_fails_not_found(self):
         station = Station.objects.create(name="Good 'ol station")
         delete_id = station.id
         Station.objects.filter(id=station.id).delete()
@@ -167,7 +208,7 @@ class StationBlockTestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_delete_station_already_blocked(self):
+    def test_block_station_fails_already_blocked(self):
         station = Station.objects.create(
             name="Good 'ol station", state=StationState.blocked
         )

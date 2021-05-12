@@ -49,7 +49,7 @@ class RegisterTestCase(APITestCase):
         request = self.client.post(
             reverse("register"), {"login": username, "password": "qwerty"}
         )
-        self.assertDictEqual(request.data, {"message": "username already taken"})
+        self.assertDictEqual(request.data, {"message": "Username already taken."})
 
     def test_register_fail_no_username_status_code(self):
         username = "john-doe"
@@ -65,7 +65,7 @@ class RegisterTestCase(APITestCase):
         request = self.client.post(
             reverse("register"), {"login": "", "password": "qwerty"}
         )
-        self.assertDictEqual(request.data, {"message": "invalid request"})
+        self.assertDictEqual(request.data, {"message": "Invalid request."})
 
 
 class LoginTestCase(APITestCase):
@@ -127,7 +127,7 @@ class LoginTestCase(APITestCase):
             reverse("login"),
             {"login": username, "password": "password", "role": UserRole.user},
         )
-        self.assertDictEqual(response.data, {"message": "bad credentials"})
+        self.assertDictEqual(response.data, {"message": "Bad credentials."})
 
 
 class LogoutTestCase(APITestCase):
