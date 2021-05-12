@@ -1,7 +1,8 @@
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from bikes.models import Bike, BikeStatus
+from bikes.models import Bike, BikeStatus, Reservation
 from core.testcases import APITestCase
 from stations.models import Station, StationState
 from users.models import User
@@ -182,7 +183,15 @@ class StationBlockTestCase(APITestCase):
         response = self.client.post(
             reverse("stations-blocked-list"), {"id": f"{station.id}"}
         )
-        self.assertEqual(response.data, {"id": str(station.id), "name": station.name})
+        self.assertEqual(
+            response.data,
+            {
+                "id": str(station.id),
+                "name": str(station.name),
+                "state": "blocked",
+                "activeBikesCount": 0,
+            },
+        )
 
     def test_block_station_gets_blocked(self):
         station = Station.objects.create(name="Good 'ol station")
@@ -208,12 +217,81 @@ class StationBlockTestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
+    def test_cancel_reservations_after_block_bike_status(self):
+        station = Station.objects.create(name="Good 'ol station")
+        Bike.objects.create(station=station)
+        reserved_bike = Bike.objects.create(station=station, status=BikeStatus.reserved)
+        time = timezone.now()
+        reservation = Reservation.objects.create(
+            bike=reserved_bike,
+            user=self.user,
+            reserved_at=time,
+            reserved_till=time + timezone.timedelta(minutes=30),
+        )
+        reserved_bike.reservation = reservation
+        reserved_bike.save()
+        self.client.post(reverse("stations-blocked-list"), {"id": f"{station.id}"})
+        self.assertEqual(
+            Bike.objects.get(id=reserved_bike.id).status, BikeStatus.available
+        )
+
+    def test_cancel_reservations_after_block_reservation_gets_deleted(self):
+        station = Station.objects.create(name="Good 'ol station")
+        Bike.objects.create(station=station)
+        reserved_bike = Bike.objects.create(station=station, status=BikeStatus.reserved)
+        time = timezone.now()
+        reservation = Reservation.objects.create(
+            bike=reserved_bike,
+            user=self.user,
+            reserved_at=time,
+            reserved_till=time + timezone.timedelta(minutes=30),
+        )
+        reserved_bike.reservation = reservation
+        reserved_bike.save()
+        self.client.post(reverse("stations-blocked-list"), {"id": f"{station.id}"})
+        self.assertFalse(Reservation.objects.filter(id=reservation.id).exists())
+
+
+class StationBlockedListTestCase(APITestCase):
+    def test_list_blocked_stations_status_code(self):
+        response = self.client.get(reverse("stations-blocked-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_list_stations_body(self):
+        Station.objects.create(name="Good 'ol station 1")
+        station1 = Station.objects.create(
+            name="Good 'ol station 2", state=StationState.blocked
+        )
+        station2 = Station.objects.create(
+            name="Good 'ol station 3", state=StationState.blocked
+        )
+        Station.objects.create(name="Good 'ol station 4")
+        response = self.client.get(reverse("stations-blocked-list"))
+        self.assertDictEqual(
+            response.data,
+            {
+                "stations": [
+                    {
+                        "id": str(station1.id),
+                        "name": station1.name,
+                        "state": station1.state,
+                        "activeBikesCount": station1.bikes.count(),
+                    },
+                    {
+                        "id": str(station2.id),
+                        "name": station2.name,
+                        "state": station2.state,
+                        "activeBikesCount": station2.bikes.count(),
+                    },
+                ],
+            },
+        )
+
 
 class StationUnblockTestCase(APITestCase):
-    def test_unblock_station_status_code(self):
+    def test_unblock_station_successful_status_code(self):
         station = Station.objects.create(
-            name="Some station",
-            state=StationState.blocked,
+            name="Good 'ol station", state=StationState.blocked
         )
         response = self.client.delete(
             reverse("stations-blocked-detail", kwargs={"pk": station.id})
@@ -222,8 +300,7 @@ class StationUnblockTestCase(APITestCase):
 
     def test_unblock_station_body(self):
         station = Station.objects.create(
-            name="Some station",
-            state=StationState.blocked,
+            name="Good 'ol station", state=StationState.blocked
         )
         response = self.client.delete(
             reverse("stations-blocked-detail", kwargs={"pk": station.id})
@@ -232,8 +309,7 @@ class StationUnblockTestCase(APITestCase):
 
     def test_unblock_station_station_gets_unblocked(self):
         station = Station.objects.create(
-            name="Some station",
-            state=StationState.blocked,
+            name="Good 'ol station", state=StationState.blocked
         )
         self.client.delete(
             reverse("stations-blocked-detail", kwargs={"pk": station.id})
@@ -242,20 +318,14 @@ class StationUnblockTestCase(APITestCase):
         self.assertEqual(station.state, StationState.working)
 
     def test_unblock_station_fails_already_unblocked_status_code(self):
-        station = Station.objects.create(
-            name="Some station",
-            state=StationState.working,
-        )
+        station = Station.objects.create(name="Good 'ol station")
         response = self.client.delete(
             reverse("stations-blocked-detail", kwargs={"pk": station.id})
         )
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
     def test_unblock_station_fails_already_unblocked_body(self):
-        station = Station.objects.create(
-            name="Some station",
-            state=StationState.working,
-        )
+        station = Station.objects.create(name="Good 'ol station")
         response = self.client.delete(
             reverse("stations-blocked-detail", kwargs={"pk": station.id})
         )

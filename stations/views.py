@@ -1,4 +1,3 @@
-from django.db.migrations.serializer import UUIDSerializer
 from django.http import Http404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -7,7 +6,6 @@ from rest_framework.decorators import action
 from rest_framework.mixins import (
     CreateModelMixin,
     ListModelMixin,
-    RetrieveModelMixin,
     DestroyModelMixin,
 )
 from rest_framework.response import Response
@@ -195,10 +193,10 @@ class StationsBlockedViewSet(
                 {"message": "Station already blocked."},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
-
         station.block()
+        station.cancel_all_reservations()
         return Response(
-            {"id": str(station.id), "name": station.name},
+            self.serializer_class(station).data,
             status=status.HTTP_201_CREATED,
         )
 

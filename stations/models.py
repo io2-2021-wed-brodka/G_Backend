@@ -29,3 +29,12 @@ class Station(models.Model):
     def unblock(self):
         self.state = StationState.working
         self.save()
+
+    def cancel_all_reservations(self):
+        from bikes.models import BikeStatus
+
+        bikes = self.bikes.all()
+        # TODO(arkadiusz-gorecki): optimize this to fix N + 1 problem
+        for bike in bikes:
+            if bike.status == BikeStatus.reserved:
+                bike.cancel_reservation()
