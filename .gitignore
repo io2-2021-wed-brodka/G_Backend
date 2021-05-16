@@ -11,3 +11,7 @@ __pycache__
 
 # TODO: remove after we migrate to PostgreSQL
 db.sqlite3
+
+# self-signed certificate generated for https
+*.crt
+*.key

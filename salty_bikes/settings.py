@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "corsheaders",
+    "drf_yasg",
+    "django_extensions",
     # internal
     "users",
     "bikes",

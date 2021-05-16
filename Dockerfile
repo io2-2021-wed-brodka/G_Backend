@@ -14,6 +14,6 @@ RUN pip install -r /requirements/main.txt
 COPY . .
 
 RUN python manage.py migrate
-RUN python manage.py loaddata fixtures.json
+RUN python manage.py loaddata fixtures/api-tests.json
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "manage.py", "runserver_plus", "0.0.0.0:8000", "--cert fake_cert"]
