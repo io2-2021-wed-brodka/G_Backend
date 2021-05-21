@@ -109,6 +109,7 @@ class Malfunction(models.Model):
     description = models.CharField(max_length=1000)
     reporting_user = models.ForeignKey(
         "users.User",
-        on_delete=models.CASCADE,
+        null=True,
+        on_delete=models.SET_NULL,
         related_name="malfunctions",
     )
