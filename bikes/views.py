@@ -5,13 +5,15 @@ from rest_framework.mixins import CreateModelMixin, ListModelMixin, DestroyModel
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from bikes.models import Bike, BikeStatus
+from bikes.models import Bike, BikeStatus, Malfunction
 
 from bikes.serializers import (
     ReadBikeSerializer,
     CreateBikeSerializer,
     RentBikeSerializer,
     ReserveBikeSerializer,
+    MalfunctionSerializer,
+    CreateMalfunctionSerializer,
 )
 from core.decorators import restrict
 from core.serializers import MessageSerializer, IdSerializer
@@ -301,14 +303,14 @@ class BikesBlockedViewSet(
         - Bike must exist
         - Bike must be currently working
         """
-        ser = IdSerializer(data=request.data)
+        ser = self.request_serializer(data=request.data)
         if not ser.is_valid():
             return Response(
                 {"message": "Id not provided"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
-            bike = Bike.objects.get(id=request.data.get("id"))
+            bike = Bike.objects.get(id=ser.data["id"])
         except Bike.DoesNotExist:
             return Response(
                 {"message": "Bike not found."}, status=status.HTTP_404_NOT_FOUND
@@ -361,4 +363,93 @@ class BikesBlockedViewSet(
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
         bike.unblock()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class MalfunctionViewSet(
+    CreateModelMixin,
+    ListModelMixin,
+    DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    queryset = Malfunction.objects.all()
+    serializer_class = MalfunctionSerializer
+    request_serializer = CreateMalfunctionSerializer
+    message_serializer = MessageSerializer
+
+    @swagger_auto_schema(
+        request_body=request_serializer,
+        responses={
+            201: openapi.Response("Successful response", serializer_class),
+            400: openapi.Response("Bad request", message_serializer),
+            404: openapi.Response("Not found", message_serializer),
+            422: openapi.Response("Not blocked", message_serializer),
+        },
+    )
+    @restrict(UserRole.user, UserRole.tech, UserRole.admin)
+    def create(self, request, *args, **kwargs):
+        """
+        Create malfunction report
+
+        Conditions:
+        - Bike must exist
+        - Bike must be currently rented by reporting user
+        """
+        ser = self.request_serializer(data=request.data)
+        if not ser.is_valid():
+            return Response(
+                {"message": "Provide bike id and description."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            bike = Bike.objects.get(id=ser.data["id"])
+        except Bike.DoesNotExist:
+            return Response(
+                {"message": "Bike not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+        if bike.status != BikeStatus.rented or bike.user != request.user:
+            return Response(
+                {"message": "Bike not rented by reporting user."},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+
+        malfunction = Malfunction.objects.create(
+            bike=bike, description=ser.data["description"], reporting_user=request.user
+        )
+        return Response(
+            data=self.serializer_class(malfunction).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    @restrict(UserRole.tech, UserRole.admin)
+    def list(self, request, *args, **kwargs):
+        return Response(
+            status=status.HTTP_200_OK,
+            data={
+                "malfunctions": self.serializer_class(
+                    self.get_queryset(), many=True
+                ).data
+            },
+        )
+
+    @swagger_auto_schema(
+        responses={
+            404: openapi.Response("Not found", message_serializer),
+            422: openapi.Response("Not blocked", message_serializer),
+        }
+    )
+    @restrict(UserRole.tech, UserRole.admin)
+    def destroy(self, request, *args, **kwargs):
+        """
+        Delete malfunction report.
+        """
+        try:
+            malfunction = Malfunction.objects.get(id=kwargs["pk"])
+        except Malfunction.DoesNotExist:
+            return Response(
+                {"message": "Malfunction does not exist."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        malfunction.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

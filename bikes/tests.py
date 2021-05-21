@@ -2,7 +2,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from bikes.models import Bike, BikeStatus, Reservation
+from bikes.models import Bike, BikeStatus, Reservation, Malfunction
 from core.testcases import APITestCase
 from stations.models import Station, StationState
 from users.models import User
@@ -644,3 +644,130 @@ class BikeUnblockTestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertDictEqual(response.data, {"message": "Bike does not exist."})
+
+
+class MalfunctionListBlockedTestCase(APITestCase):
+    def test_get_malfunctions_status_code(self):
+        response = self.client.get(reverse("malfunction-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_blocked_malfunctions_body(self):
+        user1 = User.objects.create(username="john-doe")
+        user2 = User.objects.create(username="jack-black")
+        bike1 = Bike.objects.create()
+        bike1.rent(user1)
+        bike2 = Bike.objects.create()
+        bike2.rent(user2)
+        malfunction1 = Malfunction.objects.create(bike=bike1, reporting_user=user1)
+        malfunction2 = Malfunction.objects.create(bike=bike2, reporting_user=user2)
+        response = self.client.get(reverse("malfunction-list"))
+        self.assertDictEqual(
+            response.data,
+            {
+                "malfunctions": [
+                    {
+                        "id": str(malfunction1.id),
+                        "bikeId": str(malfunction1.bike.id),
+                        "description": malfunction1.description,
+                        "reportingUserId": str(malfunction1.reporting_user.id),
+                    },
+                    {
+                        "id": str(malfunction2.id),
+                        "bikeId": str(malfunction2.bike.id),
+                        "description": malfunction2.description,
+                        "reportingUserId": str(malfunction2.reporting_user.id),
+                    },
+                ],
+            },
+        )
+
+
+class MalfunctionCreateTestCase(APITestCase):
+    def test_create_malfunction_successful_status_code(self):
+        bike = Bike.objects.create()
+        bike.rent(self.user)
+        response = self.client.post(
+            reverse("malfunction-list"),
+            {"id": str(bike.id), "description": "makes noises"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_malfunction_successful_body(self):
+        bike = Bike.objects.create()
+        bike.rent(self.user)
+        response = self.client.post(
+            reverse("malfunction-list"),
+            {"id": str(bike.id), "description": "makes noises"},
+        )
+        self.assertEqual(
+            response.data,
+            {
+                "id": str(bike.malfunction.id),
+                "bikeId": str(bike.malfunction.bike.id),
+                "description": bike.malfunction.description,
+                "reportingUserId": str(bike.malfunction.reporting_user.id),
+            },
+        )
+
+    def test_create_malfunction_fails_bike_not_found(self):
+        bike = Bike.objects.create()
+        bike_id = bike.id
+        bike.delete()
+        response = self.client.post(
+            reverse("malfunction-list"),
+            {"id": str(bike_id), "description": "makes noises"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data, {"message": "Bike not found."})
+
+    def test_create_malfunction_fails_wrong_user(self):
+        user = User.objects.create(username="john-doe")
+        bike = Bike.objects.create()
+        bike.rent(user)
+        response = self.client.post(
+            reverse("malfunction-list"),
+            {"id": str(bike.id), "description": "makes noises"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertEqual(
+            response.data, {"message": "Bike not rented by reporting user."}
+        )
+
+
+class MalfunctionDestroyTestCase(APITestCase):
+    def test_destroy_malfunction_status_code(self):
+        bike = Bike.objects.create()
+        bike.rent(self.user)
+        malfunction = Malfunction.objects.create(bike=bike, reporting_user=self.user)
+        response = self.client.delete(
+            reverse("malfunction-detail", kwargs={"pk": malfunction.id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_destroy_malfunction_body(self):
+        bike = Bike.objects.create()
+        bike.rent(self.user)
+        malfunction = Malfunction.objects.create(bike=bike, reporting_user=self.user)
+        response = self.client.delete(
+            reverse("malfunction-detail", kwargs={"pk": malfunction.id})
+        )
+        self.assertEqual(response.data, None)
+
+    def test_destroy_malfunction_malfunction_gets_destroyed(self):
+        bike = Bike.objects.create()
+        bike.rent(self.user)
+        malfunction = Malfunction.objects.create(bike=bike, reporting_user=self.user)
+        self.client.delete(reverse("malfunction-detail", kwargs={"pk": malfunction.id}))
+        self.assertEqual(Malfunction.objects.filter(id=malfunction.id).first(), None)
+
+    def test_destroy_malfunction_fails_not_found(self):
+        bike = Bike.objects.create()
+        bike.rent(self.user)
+        malfunction = Malfunction.objects.create(bike=bike, reporting_user=self.user)
+        delete_id = malfunction.id
+        malfunction.delete()
+        response = self.client.delete(
+            reverse("malfunction-detail", kwargs={"pk": delete_id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertDictEqual(response.data, {"message": "Malfunction does not exist."})
