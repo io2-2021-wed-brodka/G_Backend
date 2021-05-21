@@ -97,3 +97,18 @@ class Reservation(models.Model):
     )
     reserved_at = models.DateTimeField()
     reserved_till = models.DateTimeField()
+
+
+class Malfunction(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    bike = models.OneToOneField(
+        "bikes.Bike",
+        on_delete=models.CASCADE,
+        related_name="malfunction",
+    )
+    description = models.CharField(max_length=1000)
+    reporting_user = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        related_name="malfunctions",
+    )
