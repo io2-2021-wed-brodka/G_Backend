@@ -129,7 +129,7 @@ class LogoutAPIView(APIView):
 
 
 class UserListAPIView(ListAPIView):
-    queryset = User.objects.all()
+    queryset = User.objects.filter(role=UserRole.user)
     serializer_class = ReadUserSerializer
 
     @restrict(UserRole.admin)
@@ -146,7 +146,7 @@ class UserBlockedViewSet(
     mixins.DestroyModelMixin,
     GenericViewSet,
 ):
-    queryset = User.objects.filter(state=UserState.blocked)
+    queryset = User.objects.filter(role=UserRole.user, state=UserState.blocked)
     request_serializer = IdSerializer
     serializer_class = ReadUserSerializer
     message_serializer = MessageSerializer

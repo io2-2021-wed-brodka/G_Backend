@@ -168,17 +168,13 @@ class UserListTestCase(APITestCase):
     def test_list_users_body(self):
         user1 = User.objects.create(username="user1", role=UserRole.user)
         user2 = User.objects.create(username="user2", role=UserRole.user)
+        User.objects.create(username="tech1", role=UserRole.tech)
+        User.objects.create(username="admin2", role=UserRole.admin)
         response = self.client.get(reverse("user-list"))
         self.assertDictEqual(
             response.data,
             {
                 "users": [
-                    {
-                        # we create one admin account for authentication,
-                        # we need to consider him here
-                        "id": str(self.user.id),
-                        "name": str(self.user.username),
-                    },
                     {
                         "id": str(user1.id),
                         "name": str(user1.username),
