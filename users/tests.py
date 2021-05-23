@@ -94,7 +94,7 @@ class LoginTestCase(APITestCase):
         )
         response = self.client.post(
             reverse("login"),
-            {"login": username, "password": password},
+            {"login": username, "password": password, "role": UserRole.user},
         )
         token, _ = Token.objects.get_or_create(user=user)
         self.assertDictEqual(
