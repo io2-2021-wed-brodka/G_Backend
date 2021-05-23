@@ -47,7 +47,19 @@ class BikeViewSet(
     def create(self, request, *args, **kwargs):
         # we override the whole CreateModelMixin.create, because we need to keep created object
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            return Response(
+                {"message": "Id not provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        station = serializer.validated_data["station"]
+        if station.bikes.count() >= station.capacity:
+            return Response(
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                data={
+                    "message": "Cannot associate specified bike with specified station, station is full."
+                },
+            )
         bike = serializer.save()
         return Response(
             data=ReadBikeSerializer(bike).data,
