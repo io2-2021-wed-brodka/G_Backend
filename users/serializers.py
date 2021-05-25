@@ -34,7 +34,6 @@ class RegisterResponseSerializer(IOSerializer):
 class LoginRequestSerializer(IOSerializer):
     login = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
-    role = serializers.CharField(required=True)
 
 
 class LoginResponseSerializer(IOSerializer):
