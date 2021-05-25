@@ -82,6 +82,15 @@ class LoginAPIView(APIView):
         ser = self.request_serializer(data=request.data)
         if not ser.is_valid():
             return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data=self.message_serializer(
+                    data={"message": "Bad request."}
+                ).initial_data,
+            )
+        if not User.objects.filter(
+            username=ser.data["login"], role=ser.data["role"]
+        ).exists():
+            return Response(
                 status=status.HTTP_401_UNAUTHORIZED,
                 data=self.message_serializer(
                     data={"message": "Bad credentials."}

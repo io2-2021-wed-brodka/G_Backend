@@ -11,13 +11,13 @@ from users.models import User
 class StationCreateTestCase(APITestCase):
     def test_create_station_status_code(self):
         response = self.client.post(
-            reverse("station-list"), {"name": "Good 'ol station"}
+            reverse("station-list"), {"name": "Good 'ol station", "bikeLimit": 10}
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_create_station_body(self):
         response = self.client.post(
-            reverse("station-list"), {"name": "Good 'ol station"}
+            reverse("station-list"), {"name": "Good 'ol station", "bikeLimit": 10}
         )
         station = Station.objects.first()
         self.assertEqual(

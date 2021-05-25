@@ -37,7 +37,9 @@ class BikesGetTestCase(APITestCase):
                             "id": str(bike2.station.id),
                             "name": bike2.station.name,
                             "state": bike2.station.state,
-                            "activeBikesCount": bike2.station.bikes.count(),
+                            "activeBikesCount": bike2.station.bikes.filter(
+                                status=BikeStatus.available
+                            ).count(),
                         },
                         "user": None,
                         "status": bike2.status,
@@ -48,7 +50,9 @@ class BikesGetTestCase(APITestCase):
                             "id": str(bike3.station.id),
                             "name": bike3.station.name,
                             "state": bike3.station.state,
-                            "activeBikesCount": bike3.station.bikes.count(),
+                            "activeBikesCount": bike3.station.bikes.filter(
+                                status=BikeStatus.available
+                            ).count(),
                         },
                         "user": None,
                         "status": bike3.status,
@@ -76,7 +80,9 @@ class BikeCreateTestCase(APITestCase):
                     "id": str(station.id),
                     "name": station.name,
                     "state": station.state,
-                    "activeBikesCount": station.bikes.count(),
+                    "activeBikesCount": station.bikes.filter(
+                        status=BikeStatus.available
+                    ).count(),
                 },
                 "user": None,
                 "status": BikeStatus.available,
@@ -127,7 +133,9 @@ class BikesGetRentedTestCase(APITestCase):
                             "id": str(bike1.station.id),
                             "name": bike1.station.name,
                             "state": bike1.station.state,
-                            "activeBikesCount": bike1.station.bikes.count(),
+                            "activeBikesCount": bike1.station.bikes.filter(
+                                status=BikeStatus.available
+                            ).count(),
                         },
                         "user": {"id": str(self.user.id), "name": self.user.username},
                         "status": bike1.status,
@@ -138,7 +146,9 @@ class BikesGetRentedTestCase(APITestCase):
                             "id": str(bike2.station.id),
                             "name": bike2.station.name,
                             "state": bike2.station.state,
-                            "activeBikesCount": bike2.station.bikes.count(),
+                            "activeBikesCount": bike2.station.bikes.filter(
+                                status=BikeStatus.available
+                            ).count(),
                         },
                         "user": {"id": str(self.user.id), "name": self.user.username},
                         "status": bike2.status,
@@ -297,7 +307,9 @@ class BikesGetReservedTestCase(APITestCase):
                             "id": str(bike1.station.id),
                             "name": bike1.station.name,
                             "state": bike1.station.state,
-                            "activeBikesCount": bike1.station.bikes.count(),
+                            "activeBikesCount": bike1.station.bikes.filter(
+                                status=BikeStatus.available
+                            ).count(),
                         },
                         "reservedAt": bike1.reservation.reserved_at,
                         "reservedTill": bike1.reservation.reserved_till,
@@ -308,7 +320,9 @@ class BikesGetReservedTestCase(APITestCase):
                             "id": str(bike2.station.id),
                             "name": bike2.station.name,
                             "state": bike2.station.state,
-                            "activeBikesCount": bike2.station.bikes.count(),
+                            "activeBikesCount": bike2.station.bikes.filter(
+                                status=BikeStatus.available
+                            ).count(),
                         },
                         "reservedAt": bike2.reservation.reserved_at,
                         "reservedTill": bike2.reservation.reserved_till,
@@ -354,7 +368,9 @@ class BikeMakeReservationTestCase(APITestCase):
                     "id": str(reserved_bike.station.id),
                     "name": reserved_bike.station.name,
                     "state": reserved_bike.station.state,
-                    "activeBikesCount": reserved_bike.station.bikes.count(),
+                    "activeBikesCount": reserved_bike.station.bikes.filter(
+                        status=BikeStatus.available
+                    ).count(),
                 },
                 "reservedAt": reserved_bike.reservation.reserved_at,
                 "reservedTill": reserved_bike.reservation.reserved_till,
@@ -522,7 +538,9 @@ class BikeListBlockedTestCase(APITestCase):
                             "id": str(bike1.station.id),
                             "name": bike1.station.name,
                             "state": bike1.station.state,
-                            "activeBikesCount": bike1.station.bikes.count(),
+                            "activeBikesCount": bike1.station.bikes.filter(
+                                status=BikeStatus.available
+                            ).count(),
                         },
                         "user": None,
                         "status": BikeStatus.blocked,
@@ -533,7 +551,9 @@ class BikeListBlockedTestCase(APITestCase):
                             "id": str(bike2.station.id),
                             "name": bike2.station.name,
                             "state": bike2.station.state,
-                            "activeBikesCount": bike2.station.bikes.count(),
+                            "activeBikesCount": bike2.station.bikes.filter(
+                                status=BikeStatus.available
+                            ).count(),
                         },
                         "user": None,
                         "status": BikeStatus.blocked,
@@ -562,7 +582,9 @@ class BikeBlockTestCase(APITestCase):
                     "id": str(bike.station.id),
                     "name": bike.station.name,
                     "state": bike.station.state,
-                    "activeBikesCount": bike.station.bikes.count(),
+                    "activeBikesCount": bike.station.bikes.filter(
+                        status=BikeStatus.available
+                    ).count(),
                 },
                 "user": None,
                 "status": BikeStatus.blocked,
