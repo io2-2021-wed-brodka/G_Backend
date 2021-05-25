@@ -15,5 +15,3 @@ COPY . .
 
 RUN python manage.py migrate
 RUN python manage.py loaddata fixtures/api-tests.json
-
-CMD ./run.sh
