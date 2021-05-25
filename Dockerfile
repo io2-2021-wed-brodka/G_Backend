@@ -1,6 +1,6 @@
 # to rebuild and run docker image
 # $ docker build . -t salty-bikes
-# $ docker run -tp 8000:8000 salty-bikes
+# $ docker run -tp 8080:8080 salty-bikes
 
 FROM python:3.9.4
 
@@ -16,4 +16,4 @@ COPY . .
 RUN python manage.py migrate
 RUN python manage.py loaddata fixtures/api-tests.json
 
-CMD ["python", "manage.py", "runserver_plus", "0.0.0.0:8000", "--cert fake_cert"]
+CMD ./run.sh
