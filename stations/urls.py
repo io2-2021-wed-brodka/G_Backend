@@ -1,9 +1,9 @@
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from core.routers import OptionalSlashRouter
 
 from stations import views
 
-router = DefaultRouter()
+router = OptionalSlashRouter()
 router.register(
     "stations/blocked", views.StationsBlockedViewSet, basename="stations-blocked"
 )

@@ -8,7 +8,14 @@ For a database, we use SQLite for now, but will port to PostgreSQL in the future
 
 ## To run the project
 
-If you are a contributor for now it's best to run the server locally.   
+To simply run project do so as docker container.
+```
+docker-compose up
+```
+This will backend on https://0.0.0.0:8080.
+There is a pre-created `admin` user with password `admin`.
+
+If you are a contributor however, it's best to run the server locally.   
 You have to have `python3` installed.
 
 You must create a file called `.env` in top level directory with following contents:
@@ -27,14 +34,6 @@ python manage.py loaddata fixtures/development.json
 python manage.py runserver_plus --cert fake_cert
 ```
 Running `loaddata` creates some mock data and most importantly an admin user with username `admin` and password `admin`.
-
-Alternatively, you can run the setup as a docker container.   
-Assuming you have docker installed (verify with `docker -v`)
-
-```
-docker build . -t salty-bikes
-docker run -t salty-bikes
-```
 
 Internal documentation of endpoints is available as [swagger](https://127.0.0.1:8000/swagger/).
 

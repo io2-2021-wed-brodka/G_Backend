@@ -1,9 +1,9 @@
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from core.routers import OptionalSlashRouter
 
 from bikes import views
 
-router = DefaultRouter()
+router = OptionalSlashRouter()
 router.register("bikes/rented", views.BikesRentedViewSet, basename="bikes-rented")
 router.register("bikes/reserved", views.BikesReservedViewSet, basename="bikes-reserved")
 router.register("bikes/blocked", views.BikesBlockedViewSet, basename="bikes-blocked")
