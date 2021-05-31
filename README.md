@@ -12,7 +12,7 @@ To simply run project do so as docker container.
 ```
 docker-compose up
 ```
-This will backend on https://0.0.0.0:8080.
+This will backend on http://0.0.0.0:8080.
 There is a pre-created `admin` user with password `admin`.
 
 If you are a contributor however, it's best to run the server locally.   
@@ -31,11 +31,11 @@ Then simply run these commands in project directory:
 pip install -r requirements/dev.txt
 python manage.py migrate
 python manage.py loaddata fixtures/development.json
-python manage.py runserver_plus --cert fake_cert
+python manage.py runserver 8080 
 ```
 Running `loaddata` creates some mock data and most importantly an admin user with username `admin` and password `admin`.
 
-Internal documentation of endpoints is available as [swagger](https://127.0.0.1:8000/swagger/).
+Internal documentation of endpoints is available as [swagger](https://127.0.0.1:8080/swagger/).
 
 ## How to contribute
 
