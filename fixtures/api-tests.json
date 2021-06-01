@@ -78,7 +78,7 @@
     "model": "stations.station",
     "pk": "1e95b195-a0df-4842-871c-9bd6149e0a85",
     "fields": {
-      "state": "active",
+      "status": "active",
       "name": "Uniwersytet",
       "bikesLimit": 10
     }
@@ -87,7 +87,7 @@
     "model": "stations.station",
     "pk": "69fcc65c-b9ce-4578-92a5-4093ae8f2961",
     "fields": {
-      "state": "active",
+      "status": "active",
       "name": "Politechnika",
       "bikesLimit": 10
     }
@@ -96,7 +96,7 @@
     "model": "stations.station",
     "pk": "75fe1827-2a53-4b89-86dc-e6f99c27cd57",
     "fields": {
-      "state": "active",
+      "status": "active",
       "name": "Pole Mokotowskie",
       "bikesLimit": 10
     }
