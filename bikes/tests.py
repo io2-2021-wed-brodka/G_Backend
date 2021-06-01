@@ -521,6 +521,24 @@ class BikeReservationDeleteTestCase(APITestCase):
         )
 
 
+class BikeReservationExpiresTestCase(APITestCase):
+    def test_reservation_expires(self):
+        user = User.objects.create(first_name="John", last_name="Doe")
+        station = Station.objects.create(name="Station Name delete reservation body")
+        reserved_bike = Bike.objects.create(station=station, status=BikeStatus.reserved)
+        time = timezone.now()
+        Reservation.objects.create(
+            bike=reserved_bike,
+            user=user,
+            reserved_at=time,
+            reserved_till=time,
+        )
+        self.assertEqual(reserved_bike.status, BikeStatus.reserved)
+        self.client.get(reverse("bike-list"))
+        reserved_bike.refresh_from_db()
+        self.assertEqual(reserved_bike.status, BikeStatus.available)
+
+
 class BikeListBlockedTestCase(APITestCase):
     def test_get_blocked_bikes_status_code(self):
         response = self.client.get(reverse("bikes-blocked-list"))
