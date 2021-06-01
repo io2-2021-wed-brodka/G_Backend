@@ -427,6 +427,28 @@ class BikeMakeReservationTestCase(APITestCase):
             response.data, {"message": "Blocked users are not allowed to rent bikes."}
         )
 
+    def test_create_reservation_fails_user_has_max_reservations(self):
+        station = Station.objects.create(name="Station Name reservation already exists")
+        reserved_bike = Bike.objects.create(
+            station=station, status=BikeStatus.available
+        )
+        Bike.objects.create(station=station, status=BikeStatus.available).reserve(
+            self.user
+        )
+        Bike.objects.create(station=station, status=BikeStatus.available).reserve(
+            self.user
+        )
+        Bike.objects.create(station=station, status=BikeStatus.available).reserve(
+            self.user
+        )
+        response = self.client.post(
+            reverse("bikes-reserved-list"), {"id": reserved_bike.id}
+        )
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertDictEqual(
+            response.data, {"message": "User already has max reservations."}
+        )
+
 
 class BikeReservationDeleteTestCase(APITestCase):
     def test_delete_reservation_status_code(self):

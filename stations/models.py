@@ -4,7 +4,7 @@ from django.db import models
 
 
 class StationState(models.TextChoices):
-    working = "working"
+    working = "active"
     blocked = "blocked"
 
 

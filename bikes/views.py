@@ -5,7 +5,7 @@ from rest_framework.mixins import CreateModelMixin, ListModelMixin, DestroyModel
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from bikes.models import Bike, BikeStatus, Malfunction
+from bikes.models import Bike, BikeStatus, Malfunction, Reservation
 
 from bikes.serializers import (
     ReadBikeSerializer,
@@ -15,6 +15,7 @@ from bikes.serializers import (
     MalfunctionSerializer,
     CreateMalfunctionSerializer,
 )
+from core.constants import BIKE_RESERVATION_LIMIT
 from core.decorators import restrict
 from core.serializers import MessageSerializer, IdSerializer
 from stations.models import StationState
@@ -202,6 +203,7 @@ class BikesReservedViewSet(
 
         Conditions:
         - User can't be blocked
+        - User can't have 3 reservations already
         - Bike with given id must exist
         - Bike can't be currently be blocked
         - Bike can't be currently be rented
@@ -227,6 +229,14 @@ class BikesReservedViewSet(
         if bike.station.state == StationState.blocked:
             return Response(
                 {"message": "Station is blocked."},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        if (
+            Reservation.objects.filter(user=request.user).count()
+            >= BIKE_RESERVATION_LIMIT
+        ):
+            return Response(
+                {"message": "User already has max reservations."},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
 
