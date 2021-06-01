@@ -3,31 +3,31 @@ import uuid
 from django.db import models
 
 
-class StationState(models.TextChoices):
+class StationStatus(models.TextChoices):
     working = "active"
     blocked = "blocked"
 
 
 class Station(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    state = models.CharField(
+    status = models.CharField(
         max_length=7,
-        choices=StationState.choices,
-        default=StationState.working,
+        choices=StationStatus.choices,
+        default=StationStatus.working,
         editable=False,
     )
     name = models.CharField(max_length=255)
     bikesLimit = models.PositiveIntegerField(default=10)
 
     def __str__(self):
-        return f"Station at {self.name} ({self.state})"
+        return f"Station at {self.name} ({self.status})"
 
     def block(self):
-        self.state = StationState.blocked
+        self.status = StationStatus.blocked
         self.save()
 
     def unblock(self):
-        self.state = StationState.working
+        self.status = StationStatus.working
         self.save()
 
     def cancel_all_reservations(self):

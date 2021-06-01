@@ -18,7 +18,7 @@ from bikes.serializers import (
 from core.constants import BIKE_RESERVATION_LIMIT
 from core.decorators import restrict
 from core.serializers import MessageSerializer, IdSerializer
-from stations.models import StationState
+from stations.models import StationStatus
 from users.models import UserRole, UserState
 
 
@@ -142,7 +142,7 @@ class BikesRentedViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewS
             return Response(
                 {"message": "Bike not found."}, status=status.HTTP_404_NOT_FOUND
             )
-        if bike.station.state == StationState.blocked:
+        if bike.station.status == StationStatus.blocked:
             return Response(
                 {"message": "Cannot rent a bike from blocked station."},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -226,7 +226,7 @@ class BikesReservedViewSet(
                 {"message": "Bike already blocked, rented or reserved."},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
-        if bike.station.state == StationState.blocked:
+        if bike.station.status == StationStatus.blocked:
             return Response(
                 {"message": "Station is blocked."},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,

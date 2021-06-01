@@ -9,7 +9,7 @@ class StationSerializer(ModelSerializer):
     activeBikesCount = SerializerMethodField()
 
     class Meta:
-        fields = ("id", "name", "state", "activeBikesCount", "bikesLimit")
+        fields = ("id", "name", "status", "activeBikesCount", "bikesLimit")
         model = Station
 
     @staticmethod

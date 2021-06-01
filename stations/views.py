@@ -15,7 +15,7 @@ from bikes.models import Bike, BikeStatus
 from bikes.serializers import ReadBikeSerializer
 from core.decorators import restrict
 from core.serializers import MessageSerializer, IdSerializer
-from stations.models import Station, StationState
+from stations.models import Station, StationStatus
 from stations.serializers import StationSerializer
 from users.models import UserRole
 
@@ -73,7 +73,7 @@ class StationViewSet(
     @action(detail=False, methods=["get"])
     @restrict(UserRole.user, UserRole.tech, UserRole.admin)
     def active(self, request, *args, **kwargs):
-        stations = Station.objects.filter(state=StationState.working)
+        stations = Station.objects.filter(status=StationStatus.working)
         return Response(
             status=status.HTTP_200_OK,
             data={"stations": StationSerializer(stations, many=True).data},
@@ -124,7 +124,7 @@ class StationViewSet(
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
         station = self.get_object()
-        if station.state == StationState.blocked:
+        if station.status == StationStatus.blocked:
             return Response(
                 {
                     "message": "Cannot associate specified bike with specified station, station is blocked."
@@ -152,7 +152,7 @@ class StationsBlockedViewSet(
     DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = Station.objects.filter(state=StationState.blocked)
+    queryset = Station.objects.filter(status=StationStatus.blocked)
     serializer_class = StationSerializer
     request_serializer = IdSerializer
     message_serializer = MessageSerializer
@@ -188,7 +188,7 @@ class StationsBlockedViewSet(
             return Response(
                 {"message": "Station not found."}, status=status.HTTP_404_NOT_FOUND
             )
-        if station.state != StationState.working:
+        if station.status != StationStatus.working:
             return Response(
                 {"message": "Station already blocked."},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -232,7 +232,7 @@ class StationsBlockedViewSet(
                 {"message": "Station does not exist."},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        if station.state != StationState.blocked:
+        if station.status != StationStatus.blocked:
             return Response(
                 {"message": "Station not blocked."},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,

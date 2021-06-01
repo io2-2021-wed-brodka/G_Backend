@@ -4,7 +4,7 @@ from rest_framework.reverse import reverse
 
 from bikes.models import Bike, BikeStatus, Reservation, Malfunction
 from core.testcases import APITestCase
-from stations.models import Station, StationState
+from stations.models import Station, StationStatus
 from users.models import User
 
 
@@ -36,7 +36,7 @@ class BikesGetTestCase(APITestCase):
                         "station": {
                             "id": str(bike2.station.id),
                             "name": bike2.station.name,
-                            "state": bike2.station.state,
+                            "status": bike2.station.status,
                             "bikesLimit": bike2.station.bikesLimit,
                             "activeBikesCount": bike2.station.bikes.filter(
                                 status=BikeStatus.available
@@ -50,7 +50,7 @@ class BikesGetTestCase(APITestCase):
                         "station": {
                             "id": str(bike3.station.id),
                             "name": bike3.station.name,
-                            "state": bike3.station.state,
+                            "status": bike3.station.status,
                             "bikesLimit": bike3.station.bikesLimit,
                             "activeBikesCount": bike3.station.bikes.filter(
                                 status=BikeStatus.available
@@ -81,7 +81,7 @@ class BikeCreateTestCase(APITestCase):
                 "station": {
                     "id": str(station.id),
                     "name": station.name,
-                    "state": station.state,
+                    "status": station.status,
                     "bikesLimit": station.bikesLimit,
                     "activeBikesCount": station.bikes.filter(
                         status=BikeStatus.available
@@ -135,7 +135,7 @@ class BikesGetRentedTestCase(APITestCase):
                         "station": {
                             "id": str(bike1.station.id),
                             "name": bike1.station.name,
-                            "state": bike1.station.state,
+                            "status": bike1.station.status,
                             "bikesLimit": bike1.station.bikesLimit,
                             "activeBikesCount": bike1.station.bikes.filter(
                                 status=BikeStatus.available
@@ -149,7 +149,7 @@ class BikesGetRentedTestCase(APITestCase):
                         "station": {
                             "id": str(bike2.station.id),
                             "name": bike2.station.name,
-                            "state": bike2.station.state,
+                            "status": bike2.station.status,
                             "bikesLimit": bike2.station.bikesLimit,
                             "activeBikesCount": bike2.station.bikes.filter(
                                 status=BikeStatus.available
@@ -229,7 +229,7 @@ class BikesRentTestCase(APITestCase):
 
     def test_rent_bike_fails_station_blocked(self):
         station = Station.objects.create(
-            name="Station Name", state=StationState.blocked
+            name="Station Name", status=StationStatus.blocked
         )
         rented_bike = Bike.objects.create(station=station, status=BikeStatus.available)
         response = self.client.post(
@@ -239,7 +239,7 @@ class BikesRentTestCase(APITestCase):
 
     def test_rent_bike_status_changes_to_rented(self):
         station = Station.objects.create(
-            name="Station Name already rented x", state=StationState.working
+            name="Station Name already rented x", status=StationStatus.working
         )
         rented_bike = Bike.objects.create(station=station, status=BikeStatus.available)
         self.client.post(reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"})
@@ -248,7 +248,7 @@ class BikesRentTestCase(APITestCase):
 
     def test_rent_bike_station_changes_to_null(self):
         station = Station.objects.create(
-            name="Station Name already rented x", state=StationState.working
+            name="Station Name already rented x", status=StationStatus.working
         )
         rented_bike = Bike.objects.create(station=station, status=BikeStatus.available)
         self.client.post(reverse("bikes-rented-list"), {"id": f"{rented_bike.id}"})
@@ -257,7 +257,7 @@ class BikesRentTestCase(APITestCase):
 
     def test_rent_bike_that_was_reserved(self):
         station = Station.objects.create(
-            name="Station Name already rented x", state=StationState.working
+            name="Station Name already rented x", status=StationStatus.working
         )
         reserved_bike = Bike.objects.create(station=station)
         reserved_bike.reserve(self.user)
@@ -274,7 +274,7 @@ class BikesRentTestCase(APITestCase):
         self.user.rental_limit = 0
         self.user.save()
         station = Station.objects.create(
-            name="Station Name already rented x", state=StationState.working
+            name="Station Name already rented x", status=StationStatus.working
         )
         rented_bike = Bike.objects.create(station=station, status=BikeStatus.available)
         response = self.client.post(
@@ -311,7 +311,7 @@ class BikesGetReservedTestCase(APITestCase):
                         "station": {
                             "id": str(bike1.station.id),
                             "name": bike1.station.name,
-                            "state": bike1.station.state,
+                            "status": bike1.station.status,
                             "bikesLimit": bike1.station.bikesLimit,
                             "activeBikesCount": bike1.station.bikes.filter(
                                 status=BikeStatus.available
@@ -325,7 +325,7 @@ class BikesGetReservedTestCase(APITestCase):
                         "station": {
                             "id": str(bike2.station.id),
                             "name": bike2.station.name,
-                            "state": bike2.station.state,
+                            "status": bike2.station.status,
                             "bikesLimit": bike2.station.bikesLimit,
                             "activeBikesCount": bike2.station.bikes.filter(
                                 status=BikeStatus.available
@@ -374,7 +374,7 @@ class BikeMakeReservationTestCase(APITestCase):
                 "station": {
                     "id": str(reserved_bike.station.id),
                     "name": reserved_bike.station.name,
-                    "state": reserved_bike.station.state,
+                    "status": reserved_bike.station.status,
                     "bikesLimit": reserved_bike.station.bikesLimit,
                     "activeBikesCount": reserved_bike.station.bikes.filter(
                         status=BikeStatus.available
@@ -585,7 +585,7 @@ class BikeListBlockedTestCase(APITestCase):
                         "station": {
                             "id": str(bike1.station.id),
                             "name": bike1.station.name,
-                            "state": bike1.station.state,
+                            "status": bike1.station.status,
                             "bikesLimit": bike1.station.bikesLimit,
                             "activeBikesCount": bike1.station.bikes.filter(
                                 status=BikeStatus.available
@@ -599,7 +599,7 @@ class BikeListBlockedTestCase(APITestCase):
                         "station": {
                             "id": str(bike2.station.id),
                             "name": bike2.station.name,
-                            "state": bike2.station.state,
+                            "status": bike2.station.status,
                             "bikesLimit": bike2.station.bikesLimit,
                             "activeBikesCount": bike2.station.bikes.filter(
                                 status=BikeStatus.available
@@ -631,7 +631,7 @@ class BikeBlockTestCase(APITestCase):
                 "station": {
                     "id": str(bike.station.id),
                     "name": bike.station.name,
-                    "state": bike.station.state,
+                    "status": bike.station.status,
                     "bikesLimit": bike.station.bikesLimit,
                     "activeBikesCount": bike.station.bikes.filter(
                         status=BikeStatus.available

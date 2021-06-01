@@ -4,7 +4,7 @@ from rest_framework.reverse import reverse
 
 from bikes.models import Bike, BikeStatus, Reservation
 from core.testcases import APITestCase
-from stations.models import Station, StationState
+from stations.models import Station, StationStatus
 from users.models import User
 
 
@@ -25,7 +25,7 @@ class StationCreateTestCase(APITestCase):
             {
                 "id": str(station.id),
                 "name": station.name,
-                "state": station.state,
+                "status": station.status,
                 "bikesLimit": station.bikesLimit,
                 "activeBikesCount": station.bikes.count(),
             },
@@ -46,7 +46,7 @@ class StationGetTestCase(APITestCase):
             {
                 "id": str(station.id),
                 "name": station.name,
-                "state": station.state,
+                "status": station.status,
                 "bikesLimit": station.bikesLimit,
                 "activeBikesCount": station.bikes.count(),
             },
@@ -62,7 +62,7 @@ class StationListGetTestCase(APITestCase):
         station1 = Station.objects.create(name="Good 'ol station 1")
         station2 = Station.objects.create(name="Good 'ol station 2")
         station3 = Station.objects.create(
-            name="Good 'ol station 1", state=StationState.blocked
+            name="Good 'ol station 1", status=StationStatus.blocked
         )
         response = self.client.get(reverse("station-list"))
         self.assertDictEqual(
@@ -72,21 +72,21 @@ class StationListGetTestCase(APITestCase):
                     {
                         "id": str(station1.id),
                         "name": station1.name,
-                        "state": station1.state,
+                        "status": station1.status,
                         "bikesLimit": station1.bikesLimit,
                         "activeBikesCount": station1.bikes.count(),
                     },
                     {
                         "id": str(station2.id),
                         "name": station2.name,
-                        "state": station2.state,
+                        "status": station2.status,
                         "bikesLimit": station2.bikesLimit,
                         "activeBikesCount": station2.bikes.count(),
                     },
                     {
                         "id": str(station3.id),
                         "name": station3.name,
-                        "state": station3.state,
+                        "status": station3.status,
                         "bikesLimit": station3.bikesLimit,
                         "activeBikesCount": station3.bikes.count(),
                     },
@@ -147,10 +147,10 @@ class StationListBlockedTestCase(APITestCase):
 
     def test_get_stations_body(self):
         station1 = Station.objects.create(
-            name="Good 'ol station 1", state=StationState.blocked
+            name="Good 'ol station 1", status=StationStatus.blocked
         )
         station2 = Station.objects.create(
-            name="Good 'ol station 2", state=StationState.blocked
+            name="Good 'ol station 2", status=StationStatus.blocked
         )
         Station.objects.create(name="Good 'ol station 3")
         response = self.client.get(reverse("stations-blocked-list"))
@@ -161,14 +161,14 @@ class StationListBlockedTestCase(APITestCase):
                     {
                         "id": str(station1.id),
                         "name": station1.name,
-                        "state": station1.state,
+                        "status": station1.status,
                         "bikesLimit": station1.bikesLimit,
                         "activeBikesCount": station1.bikes.count(),
                     },
                     {
                         "id": str(station2.id),
                         "name": station2.name,
-                        "state": station2.state,
+                        "status": station2.status,
                         "bikesLimit": station2.bikesLimit,
                         "activeBikesCount": station2.bikes.count(),
                     },
@@ -195,7 +195,7 @@ class StationBlockTestCase(APITestCase):
             {
                 "id": str(station.id),
                 "name": str(station.name),
-                "state": "blocked",
+                "status": "blocked",
                 "bikesLimit": station.bikesLimit,
                 "activeBikesCount": 0,
             },
@@ -205,7 +205,7 @@ class StationBlockTestCase(APITestCase):
         station = Station.objects.create(name="Good 'ol station")
         self.client.post(reverse("stations-blocked-list"), {"id": f"{station.id}"})
         station.refresh_from_db()
-        self.assertEqual(station.state, StationState.blocked)
+        self.assertEqual(station.status, StationStatus.blocked)
 
     def test_block_station_fails_not_found(self):
         station = Station.objects.create(name="Good 'ol station")
@@ -218,7 +218,7 @@ class StationBlockTestCase(APITestCase):
 
     def test_block_station_fails_already_blocked(self):
         station = Station.objects.create(
-            name="Good 'ol station", state=StationState.blocked
+            name="Good 'ol station", status=StationStatus.blocked
         )
         response = self.client.post(
             reverse("stations-blocked-list"), {"id": f"{station.id}"}
@@ -268,10 +268,10 @@ class StationBlockedListTestCase(APITestCase):
     def test_list_stations_body(self):
         Station.objects.create(name="Good 'ol station 1")
         station1 = Station.objects.create(
-            name="Good 'ol station 2", state=StationState.blocked
+            name="Good 'ol station 2", status=StationStatus.blocked
         )
         station2 = Station.objects.create(
-            name="Good 'ol station 3", state=StationState.blocked
+            name="Good 'ol station 3", status=StationStatus.blocked
         )
         Station.objects.create(name="Good 'ol station 4")
         response = self.client.get(reverse("stations-blocked-list"))
@@ -282,14 +282,14 @@ class StationBlockedListTestCase(APITestCase):
                     {
                         "id": str(station1.id),
                         "name": station1.name,
-                        "state": station1.state,
+                        "status": station1.status,
                         "bikesLimit": station1.bikesLimit,
                         "activeBikesCount": station1.bikes.count(),
                     },
                     {
                         "id": str(station2.id),
                         "name": station2.name,
-                        "state": station2.state,
+                        "status": station2.status,
                         "bikesLimit": station2.bikesLimit,
                         "activeBikesCount": station2.bikes.count(),
                     },
@@ -301,7 +301,7 @@ class StationBlockedListTestCase(APITestCase):
 class StationUnblockTestCase(APITestCase):
     def test_unblock_station_successful_status_code(self):
         station = Station.objects.create(
-            name="Good 'ol station", state=StationState.blocked
+            name="Good 'ol station", status=StationStatus.blocked
         )
         response = self.client.delete(
             reverse("stations-blocked-detail", kwargs={"pk": station.id})
@@ -310,7 +310,7 @@ class StationUnblockTestCase(APITestCase):
 
     def test_unblock_station_body(self):
         station = Station.objects.create(
-            name="Good 'ol station", state=StationState.blocked
+            name="Good 'ol station", status=StationStatus.blocked
         )
         response = self.client.delete(
             reverse("stations-blocked-detail", kwargs={"pk": station.id})
@@ -319,13 +319,13 @@ class StationUnblockTestCase(APITestCase):
 
     def test_unblock_station_station_gets_unblocked(self):
         station = Station.objects.create(
-            name="Good 'ol station", state=StationState.blocked
+            name="Good 'ol station", status=StationStatus.blocked
         )
         self.client.delete(
             reverse("stations-blocked-detail", kwargs={"pk": station.id})
         )
         station.refresh_from_db()
-        self.assertEqual(station.state, StationState.working)
+        self.assertEqual(station.status, StationStatus.working)
 
     def test_unblock_station_fails_already_unblocked_status_code(self):
         station = Station.objects.create(name="Good 'ol station")
@@ -345,7 +345,7 @@ class StationUnblockTestCase(APITestCase):
 class StationReturnBikeTestCase(APITestCase):
     def test_return_bike_successful_status_code(self):
         station = Station.objects.create(
-            name="Station Name", state=StationState.working
+            name="Station Name", status=StationStatus.working
         )
         returned_bike = Bike.objects.create(
             user=self.user, station=None, status=BikeStatus.rented
@@ -358,7 +358,7 @@ class StationReturnBikeTestCase(APITestCase):
 
     def test_return_bike_successful_body(self):
         station = Station.objects.create(
-            name="Station Name", state=StationState.working
+            name="Station Name", status=StationStatus.working
         )
         returned_bike = Bike.objects.create(
             user=self.user, station=None, status=BikeStatus.rented
@@ -374,7 +374,7 @@ class StationReturnBikeTestCase(APITestCase):
                 "station": {
                     "id": str(station.id),
                     "name": station.name,
-                    "state": station.state,
+                    "status": station.status,
                     "bikesLimit": station.bikesLimit,
                     "activeBikesCount": station.bikes.count(),
                 },
@@ -385,7 +385,7 @@ class StationReturnBikeTestCase(APITestCase):
 
     def test_return_bike_not_found(self):
         station = Station.objects.create(
-            name="Station Name", state=StationState.working
+            name="Station Name", status=StationStatus.working
         )
         returned_bike = Bike.objects.create(
             user=self.user, station=None, status=BikeStatus.rented
@@ -399,7 +399,7 @@ class StationReturnBikeTestCase(APITestCase):
 
     def test_return_bike_station_not_none(self):
         station = Station.objects.create(
-            name="Station Name", state=StationState.working
+            name="Station Name", status=StationStatus.working
         )
         returned_bike = Bike.objects.create(
             user=self.user, station=station, status=BikeStatus.rented
@@ -412,7 +412,7 @@ class StationReturnBikeTestCase(APITestCase):
 
     def test_return_bike_fails_station_blocked(self):
         station = Station.objects.create(
-            name="Station Name", state=StationState.blocked
+            name="Station Name", status=StationStatus.blocked
         )
         returned_bike = Bike.objects.create(
             user=self.user, station=None, status=BikeStatus.rented
@@ -443,7 +443,7 @@ class StationReturnBikeTestCase(APITestCase):
     def test_return_bike_fails_user_returning_is_different(self):
         user = User.objects.create(first_name="John", last_name="Doe")
         station = Station.objects.create(
-            name="Station Name", state=StationState.working
+            name="Station Name", status=StationStatus.working
         )
         returned_bike = Bike.objects.create(
             user=user, station=None, status=BikeStatus.rented
@@ -482,7 +482,7 @@ class ListBikesAtStationTestCase(APITestCase):
                         "station": {
                             "id": str(bike1.station.id),
                             "name": bike1.station.name,
-                            "state": bike1.station.state,
+                            "status": bike1.station.status,
                             "bikesLimit": bike1.station.bikesLimit,
                             "activeBikesCount": bike1.station.bikes.count(),
                         },
@@ -494,7 +494,7 @@ class ListBikesAtStationTestCase(APITestCase):
                         "station": {
                             "id": str(bike2.station.id),
                             "name": bike2.station.name,
-                            "state": bike2.station.state,
+                            "status": bike2.station.status,
                             "bikesLimit": bike2.station.bikesLimit,
                             "activeBikesCount": bike2.station.bikes.count(),
                         },
@@ -514,7 +514,7 @@ class ActiveStationListGetTestCase(APITestCase):
     def test_get_active_stations_body(self):
         station1 = Station.objects.create(name="Good 'ol station 1")
         station2 = Station.objects.create(name="Good 'ol station 2")
-        Station.objects.create(name="Good 'ol station 3", state=StationState.blocked)
+        Station.objects.create(name="Good 'ol station 3", status=StationStatus.blocked)
         response = self.client.get(reverse("station-active"))
         self.assertDictEqual(
             response.data,
@@ -523,14 +523,14 @@ class ActiveStationListGetTestCase(APITestCase):
                     {
                         "id": str(station1.id),
                         "name": station1.name,
-                        "state": station1.state,
+                        "status": station1.status,
                         "bikesLimit": station1.bikesLimit,
                         "activeBikesCount": station1.bikes.count(),
                     },
                     {
                         "id": str(station2.id),
                         "name": station2.name,
-                        "state": station2.state,
+                        "status": station2.status,
                         "bikesLimit": station2.bikesLimit,
                         "activeBikesCount": station2.bikes.count(),
                     },
