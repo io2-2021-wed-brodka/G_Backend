@@ -53,7 +53,7 @@ class BikeViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
         station = serializer.validated_data["station"]
-        if station.bikes.count() >= station.capacity:
+        if station.bikes.count() >= station.bikesLimit:
             return Response(
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 data={

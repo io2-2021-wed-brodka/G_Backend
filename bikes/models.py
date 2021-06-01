@@ -74,6 +74,11 @@ class Bike(models.Model):
         self.status = BikeStatus.available
         self.save()
 
+    def check_reservation(self):
+        if hasattr(self, "reservation"):
+            if timezone.now() > self.reservation.reserved_till:
+                self.cancel_reservation()
+
     def block(self):
         self.status = BikeStatus.blocked
         self.save()
