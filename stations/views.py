@@ -131,7 +131,7 @@ class StationViewSet(
                 },
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
-        if station.bikes.count() >= station.capacity:
+        if station.bikes.count() >= station.bikesLimit:
             return Response(
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 data={

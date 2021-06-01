@@ -11,13 +11,13 @@ from users.models import User
 class StationCreateTestCase(APITestCase):
     def test_create_station_status_code(self):
         response = self.client.post(
-            reverse("station-list"), {"name": "Good 'ol station", "bikeLimit": 10}
+            reverse("station-list"), {"name": "Good 'ol station", "bikesLimit": 10}
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_create_station_body(self):
         response = self.client.post(
-            reverse("station-list"), {"name": "Good 'ol station", "bikeLimit": 10}
+            reverse("station-list"), {"name": "Good 'ol station", "bikesLimit": 10}
         )
         station = Station.objects.first()
         self.assertEqual(
@@ -26,6 +26,7 @@ class StationCreateTestCase(APITestCase):
                 "id": str(station.id),
                 "name": station.name,
                 "state": station.state,
+                "bikesLimit": station.bikesLimit,
                 "activeBikesCount": station.bikes.count(),
             },
         )
@@ -46,6 +47,7 @@ class StationGetTestCase(APITestCase):
                 "id": str(station.id),
                 "name": station.name,
                 "state": station.state,
+                "bikesLimit": station.bikesLimit,
                 "activeBikesCount": station.bikes.count(),
             },
         )
@@ -71,18 +73,21 @@ class StationListGetTestCase(APITestCase):
                         "id": str(station1.id),
                         "name": station1.name,
                         "state": station1.state,
+                        "bikesLimit": station1.bikesLimit,
                         "activeBikesCount": station1.bikes.count(),
                     },
                     {
                         "id": str(station2.id),
                         "name": station2.name,
                         "state": station2.state,
+                        "bikesLimit": station2.bikesLimit,
                         "activeBikesCount": station2.bikes.count(),
                     },
                     {
                         "id": str(station3.id),
                         "name": station3.name,
                         "state": station3.state,
+                        "bikesLimit": station3.bikesLimit,
                         "activeBikesCount": station3.bikes.count(),
                     },
                 ],
@@ -157,12 +162,14 @@ class StationListBlockedTestCase(APITestCase):
                         "id": str(station1.id),
                         "name": station1.name,
                         "state": station1.state,
+                        "bikesLimit": station1.bikesLimit,
                         "activeBikesCount": station1.bikes.count(),
                     },
                     {
                         "id": str(station2.id),
                         "name": station2.name,
                         "state": station2.state,
+                        "bikesLimit": station2.bikesLimit,
                         "activeBikesCount": station2.bikes.count(),
                     },
                 ],
@@ -189,6 +196,7 @@ class StationBlockTestCase(APITestCase):
                 "id": str(station.id),
                 "name": str(station.name),
                 "state": "blocked",
+                "bikesLimit": station.bikesLimit,
                 "activeBikesCount": 0,
             },
         )
@@ -275,12 +283,14 @@ class StationBlockedListTestCase(APITestCase):
                         "id": str(station1.id),
                         "name": station1.name,
                         "state": station1.state,
+                        "bikesLimit": station1.bikesLimit,
                         "activeBikesCount": station1.bikes.count(),
                     },
                     {
                         "id": str(station2.id),
                         "name": station2.name,
                         "state": station2.state,
+                        "bikesLimit": station2.bikesLimit,
                         "activeBikesCount": station2.bikes.count(),
                     },
                 ],
@@ -365,6 +375,7 @@ class StationReturnBikeTestCase(APITestCase):
                     "id": str(station.id),
                     "name": station.name,
                     "state": station.state,
+                    "bikesLimit": station.bikesLimit,
                     "activeBikesCount": station.bikes.count(),
                 },
                 "user": None,
@@ -413,7 +424,7 @@ class StationReturnBikeTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
     def test_return_bike_fails_station_over_capacity(self):
-        station = Station.objects.create(name="Station Name", capacity=0)
+        station = Station.objects.create(name="Station Name", bikesLimit=0)
         returned_bike = Bike.objects.create(
             user=self.user, station=None, status=BikeStatus.rented
         )
@@ -472,6 +483,7 @@ class ListBikesAtStationTestCase(APITestCase):
                             "id": str(bike1.station.id),
                             "name": bike1.station.name,
                             "state": bike1.station.state,
+                            "bikesLimit": bike1.station.bikesLimit,
                             "activeBikesCount": bike1.station.bikes.count(),
                         },
                         "user": None,
@@ -483,6 +495,7 @@ class ListBikesAtStationTestCase(APITestCase):
                             "id": str(bike2.station.id),
                             "name": bike2.station.name,
                             "state": bike2.station.state,
+                            "bikesLimit": bike2.station.bikesLimit,
                             "activeBikesCount": bike2.station.bikes.count(),
                         },
                         "user": None,
@@ -511,12 +524,14 @@ class ActiveStationListGetTestCase(APITestCase):
                         "id": str(station1.id),
                         "name": station1.name,
                         "state": station1.state,
+                        "bikesLimit": station1.bikesLimit,
                         "activeBikesCount": station1.bikes.count(),
                     },
                     {
                         "id": str(station2.id),
                         "name": station2.name,
                         "state": station2.state,
+                        "bikesLimit": station2.bikesLimit,
                         "activeBikesCount": station2.bikes.count(),
                     },
                 ],

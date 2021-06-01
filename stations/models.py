@@ -17,7 +17,7 @@ class Station(models.Model):
         editable=False,
     )
     name = models.CharField(max_length=255)
-    capacity = models.PositiveIntegerField(default=10)
+    bikesLimit = models.PositiveIntegerField(default=10)
 
     def __str__(self):
         return f"Station at {self.name} ({self.state})"
