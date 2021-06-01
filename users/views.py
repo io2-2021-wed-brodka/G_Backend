@@ -26,6 +26,7 @@ from users.serializers import (
 
 class RegisterAPIView(APIView):
     permission_classes = (AllowAny,)  # no permissions needed to register
+    authentication_classes = []
     request_serializer = RegisterRequestSerializer
     response_serializer = RegisterResponseSerializer
     message_serializer = MessageSerializer
@@ -67,6 +68,7 @@ class RegisterAPIView(APIView):
 
 class LoginAPIView(APIView):
     permission_classes = (AllowAny,)  # no permissions needed to log in
+    authentication_classes = []
     request_serializer = LoginRequestSerializer
     response_serializer = LoginResponseSerializer
     message_serializer = MessageSerializer
