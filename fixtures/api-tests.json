@@ -80,7 +80,7 @@
     "fields": {
       "state": "working",
       "name": "Uniwersytet",
-      "capacity": 10
+      "bikesLimit": 10
     }
   },
   {
@@ -89,7 +89,7 @@
     "fields": {
       "state": "working",
       "name": "Politechnika",
-      "capacity": 10
+      "bikesLimit": 10
     }
   },
   {
@@ -98,7 +98,7 @@
     "fields": {
       "state": "working",
       "name": "Pole Mokotowskie",
-      "capacity": 10
+      "bikesLimit": 10
     }
   }
 ]

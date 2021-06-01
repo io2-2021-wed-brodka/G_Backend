@@ -194,7 +194,7 @@
     "fields": {
       "state": "working",
       "name": "Zoo",
-      "capacity": 10
+      "bikesLimit": 10
     }
   },
   {
@@ -203,7 +203,7 @@
     "fields": {
       "state": "working",
       "name": "Łazienki",
-      "capacity": 10
+      "bikesLimit": 10
     }
   },
   {
@@ -212,7 +212,7 @@
     "fields": {
       "state": "blocked",
       "name": "Las Kabacki",
-      "capacity": 10
+      "bikesLimit": 10
     }
   },
   {
@@ -221,7 +221,7 @@
     "fields": {
       "state": "working",
       "name": "Uniwersytet",
-      "capacity": 10
+      "bikesLimit": 10
     }
   },
   {
@@ -230,7 +230,7 @@
     "fields": {
       "state": "working",
       "name": "Plac Bankowy",
-      "capacity": 10
+      "bikesLimit": 10
     }
   },
   {
@@ -239,7 +239,7 @@
     "fields": {
       "state": "working",
       "name": "Stadion Narodowy",
-      "capacity": 10
+      "bikesLimit": 10
     }
   },
   {
@@ -248,7 +248,7 @@
     "fields": {
       "state": "working",
       "name": "Metro Młociny",
-      "capacity": 10
+      "bikesLimit": 10
     }
   },
   {
@@ -257,7 +257,7 @@
     "fields": {
       "state": "blocked",
       "name": "Plac Unii Lubelskiej",
-      "capacity": 10
+      "bikesLimit": 10
     }
   },
   {
@@ -266,7 +266,7 @@
     "fields": {
       "state": "working",
       "name": "Ratusz Bielany",
-      "capacity": 10
+      "bikesLimit": 10
     }
   },
   {
@@ -275,7 +275,7 @@
     "fields": {
       "state": "working",
       "name": "Politechnika",
-      "capacity": 10
+      "bikesLimit": 10
     }
   },
   {
@@ -284,7 +284,7 @@
     "fields": {
       "state": "working",
       "name": "Pole Mokotowskie",
-      "capacity": 10
+      "bikesLimit": 10
     }
   }
 ]
