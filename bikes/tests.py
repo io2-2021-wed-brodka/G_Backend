@@ -95,17 +95,17 @@ class BikeCreateTestCase(APITestCase):
 
 class BikeDeleteTestCase(APITestCase):
     def test_delete_bike_successful_status_code(self):
-        bike = Bike.objects.create()
+        bike = Bike.objects.create(status=BikeStatus.blocked)
         response = self.client.delete(reverse("bike-detail", kwargs={"pk": bike.id}))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_delete_bike_successful_body(self):
-        bike = Bike.objects.create()
+        bike = Bike.objects.create(status=BikeStatus.blocked)
         response = self.client.delete(reverse("bike-detail", kwargs={"pk": bike.id}))
         self.assertEqual(response.data, None)
 
     def test_delete_bike_successful_doesnt_exist(self):
-        bike = Bike.objects.create()
+        bike = Bike.objects.create(status=BikeStatus.blocked)
         self.client.delete(reverse("bike-detail", kwargs={"pk": bike.id}))
         self.assertFalse(Bike.objects.filter(id=bike.id).exists())
 
