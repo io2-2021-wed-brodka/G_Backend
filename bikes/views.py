@@ -82,6 +82,12 @@ class BikeViewSet(
     )
     @restrict(UserRole.admin)
     def destroy(self, request, *args, **kwargs):
+        bike = self.get_object()
+        if bike.status != BikeStatus.blocked:
+            return Response(
+                {"message": "Bike is not blocked."},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
         return super().destroy(request, *args, **kwargs)
 
 
