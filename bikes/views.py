@@ -321,7 +321,7 @@ class BikesBlockedViewSet(
             422: openapi.Response("Not blocked", message_serializer),
         },
     )
-    @restrict(UserRole.admin)
+    @restrict(UserRole.tech, UserRole.admin)
     def create(self, request, *args, **kwargs):
         """
         Block a bike.
@@ -355,7 +355,7 @@ class BikesBlockedViewSet(
             status=status.HTTP_201_CREATED,
         )
 
-    @restrict(UserRole.admin)
+    @restrict(UserRole.tech, UserRole.admin)
     def list(self, request, *args, **kwargs):
         return Response(
             status=status.HTTP_200_OK,
@@ -368,7 +368,7 @@ class BikesBlockedViewSet(
             422: openapi.Response("Not blocked", message_serializer),
         }
     )
-    @restrict(UserRole.admin)
+    @restrict(UserRole.tech, UserRole.admin)
     def destroy(self, request, *args, **kwargs):
         """
         Unblock a bike.
